@@ -1,0 +1,81 @@
+/* ===== HERO SECTION ===== */
+.s-home {
+  position: relative;
+  height: 100vh;
+  background: url("img/fondo.png") no-repeat center center/cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  overflow: hidden;
+}
+
+.s-home .overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.home-content {
+  position: relative;
+  z-index: 2;
+  padding: 20px;
+  max-width: 800px;
+}
+
+.home-content__main h3 {
+  font-size: 1.8rem;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.home-content__main h3 span {
+  color: #00c9a7;
+  font-weight: 600;
+}
+
+.home-content__main h1 {
+  font-size: 2.8rem;
+  line-height: 1.3;
+  font-weight: 700;
+  margin-bottom: 35px;
+}
+
+.home-content__buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.btn--primary {
+  background: #00c9a7;
+  color: #fff;
+}
+
+.btn--primary:hover {
+  background: #00b493;
+}
+
+.btn--secondary {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+}
+
+.btn--secondary:hover {
+  background: #fff;
+  color: #000;
+}
