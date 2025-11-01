@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concierium | Login</title>
+  <title>Concierium | Sign In</title>
 </head>
 <body>
-  <h2>Iniciar sesión</h2>
-  <form id="formLogin">
+  <h2>Crear cuenta</h2>
+  <form id="formSignIn">
+    <input name="full_name" placeholder="Nombre completo" required>
     <input type="email" name="email" placeholder="Correo electrónico" required>
+    <input type="tel" name="phone" placeholder="Teléfono (opcional)">
     <input type="password" name="password" placeholder="Contraseña" required>
-    <button type="submit">Entrar</button>
+    <button type="submit">Crear cuenta</button>
   </form>
   <p id="msg"></p>
 
   <script>
-    const form = document.getElementById('formLogin');
+    const form = document.getElementById('formSignIn');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const body = Object.fromEntries(new FormData(form).entries());
-      const res = await fetch('/api/auth/login', {
+      const res = await fetch('/api/auth/signin', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(body)
@@ -28,7 +30,7 @@
       const msg = document.getElementById('msg');
       if (data.ok) {
         localStorage.setItem('user', JSON.stringify(data.user));
-        msg.textContent = 'Bienvenido, ' + data.user.full_name;
+        msg.textContent = 'Cuenta creada correctamente ✅';
         setTimeout(() => window.location.href = 'index.html', 800);
       } else msg.textContent = data.error;
     });
