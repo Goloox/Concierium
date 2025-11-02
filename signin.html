@@ -1,56 +1,121 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Concierium | Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --brand:#00c9a7; --dark:#0b0b0b; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin:0;
+      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background: url("img/fondo.png") no-repeat center/cover fixed;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .card{
+      width:100%; max-width:420px;
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(3px);
+      border-radius:16px;
+      padding:36px 28px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.25);
+    }
+    .brand{
+      display:flex; gap:10px; align-items:center; justify-content:center; margin-bottom:10px;
+    }
+    .brand img{ width:38px; height:38px; object-fit:contain; }
+    .brand span{ font-weight:700; letter-spacing:.5px; color:#111; }
+    h2{ margin:10px 0 18px; font-size:22px; text-align:center; color:#222; }
+    form{ display:grid; gap:12px; }
+    input, select{
+      width:100%; padding:12px 14px; border-radius:10px;
+      border:1px solid #d9d9d9; font-size:15px; outline:none; background:#fff;
+    }
+    input:focus, select:focus{ border-color: var(--brand); box-shadow: 0 0 0 3px rgba(0,201,167,.15); }
+    button{
+      margin-top:6px;
+      padding:12px 16px; border:0; border-radius:10px; cursor:pointer;
+      background: var(--dark); color:#fff; font-weight:600; font-size:15px;
+      transition: transform .06s ease, filter .2s ease;
+    }
+    button:hover{ filter:brightness(1.1); }
+    button:active{ transform: translateY(1px); }
+    .meta{ margin-top:10px; font-size:13px; text-align:center; color:#666; }
+    .meta a{ color: var(--brand); text-decoration:none; }
+    .msg{ margin-top:10px; min-height:18px; font-size:14px; text-align:center; color:#c00; }
+    @media (max-width:480px){
+      .card{ margin:16px; padding:28px 22px; }
+    }
+  </style>
 </head>
 <body>
-  <h2>Crear cuenta</h2>
-  <form id="formSignIn">
-    <input name="full_name" placeholder="Nombre completo" required>
-    <input type="email" name="email" placeholder="Correo electrónico" required>
-    <input type="tel" name="phone" placeholder="Teléfono (opcional)">
-    <input type="password" name="password" placeholder="Contraseña" required>
-    <button type="submit">Crear cuenta</button>
-  </form>
-  <p id="msg"></p>
+  <div class="card">
+    <div class="brand">
+      <img src="img/logo.png" alt="Concierium">
+      <span>Concierium</span>
+    </div>
+    <h2>Crear cuenta</h2>
+
+    <form id="formSignIn" novalidate>
+      <input type="text" name="full_name" placeholder="Nombre completo" autocomplete="name" required>
+      <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required>
+      <input type="password" name="password" placeholder="Contraseña" autocomplete="new-password" required>
+      <input type="tel" name="phone" placeholder="Teléfono (opcional)" autocomplete="tel">
+      <select name="preferred_lang">
+        <option value="es" selected>Español</option>
+        <option value="en">English</option>
+      </select>
+      <button type="submit">Registrarme</button>
+      <div id="msg" class="msg"></div>
+    </form>
+
+    <div class="meta">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+  </div>
 
   <script>
-  <script>
-document.getElementById('formSignIn').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const body = Object.fromEntries(new FormData(e.target).entries());
+    const form = document.getElementById('formSignIn');
+    const msgEl = document.getElementById('msg');
 
-  // mientras validas el redirect, puedes apuntar directo a /.netlify/functions
-  const API = '/.netlify/functions/auth-signin'
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msgEl.style.color = '#666';
+      msgEl.textContent = 'Procesando...';
 
-  try {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(body)
+      // Datos
+      const body = Object.fromEntries(new FormData(form).entries());
+
+      try {
+        const res = await fetch('/.netlify/functions/auth-signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        // Evita errores cuando Netlify devuelve HTML en errores
+        const text = await res.text();
+        let data = {};
+        try { data = text ? JSON.parse(text) : {}; } catch {}
+
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
+
+        msgEl.style.color = 'green';
+        msgEl.textContent = 'Cuenta creada correctamente ✅';
+        // (Opcional) guardar sesión básica
+        try { localStorage.setItem('user', JSON.stringify(data.user)); } catch {}
+        setTimeout(() => { window.location.href = 'login.html'; }, 900);
+
+      } catch (err) {
+        msgEl.style.color = '#c00';
+        msgEl.textContent = err?.message || 'Error al registrar';
+      }
     });
-
-    const text = await res.text();
-    let data = {};
-    try { data = text ? JSON.parse(text) : {}; } catch {}
-
-    if (!res.ok || !data.ok) {
-      const msg = data.error || `HTTP ${res.status}`;
-      throw new Error(msg);
-    }
-
-    localStorage.setItem('user', JSON.stringify(data.user));
-    document.getElementById('msg').textContent = 'Cuenta creada ✅';
-    setTimeout(()=> location.href='index.html', 800);
-  } catch (err) {
-    document.getElementById('msg').textContent = err.message || 'Error inesperado';
-  }
-});
-</script>
-
   </script>
 </body>
 </html>
-
