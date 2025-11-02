@@ -64,7 +64,14 @@
       <input type="text" name="full_name" placeholder="Nombre completo" autocomplete="name" required minlength="3">
       <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required>
       <input type="password" name="password" placeholder="Contraseña (mín. 6)" autocomplete="new-password" required minlength="6">
-      <input type="tel" name="phone" placeholder="Teléfono (opcional)" autocomplete="tel" pattern="^[0-9+()\-\s]{7,20}$">
+      <input
+        type="tel"
+        name="phone"
+        placeholder="Teléfono (opcional)"
+        autocomplete="tel"
+        inputmode="tel"
+        pattern="^[0-9()+\- ]{7,20}$"
+      >
       <select name="preferred_lang">
         <option value="es" selected>Español</option>
         <option value="en">English</option>
@@ -83,12 +90,10 @@
     const msgEl = document.getElementById('msg');
     const btn = document.getElementById('btnSubmit');
 
-    function setMsg(text, color='#666'){ msgEl.style.color = color; msgEl.textContent = text; }
+    const setMsg = (t, c='#666') => { msgEl.style.color = c; msgEl.textContent = t; };
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-
-      // Validación básica del navegador
       if (!form.reportValidity()) return;
 
       btn.disabled = true;
