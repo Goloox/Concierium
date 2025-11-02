@@ -1,0 +1,17 @@
+{
+  "name": "falling-field-74243600",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo Static",
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.5",
+    "jsonwebtoken": "^9.0.2",
+    "nodemailer": "^6.9.15",
+    "busboy": "^1.6.0"
+  }
+}
