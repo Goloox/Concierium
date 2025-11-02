@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Concierium | Sign In</title>
+  <title>Concierium | Crear cuenta</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
     :root { --brand:#00c9a7; --dark:#0b0b0b; }
@@ -41,6 +41,7 @@
       background: var(--dark); color:#fff; font-weight:600; font-size:15px;
       transition: transform .06s ease, filter .2s ease;
     }
+    button[disabled]{ opacity:.7; cursor:not-allowed; }
     button:hover{ filter:brightness(1.1); }
     button:active{ transform: translateY(1px); }
     .meta{ margin-top:10px; font-size:13px; text-align:center; color:#666; }
@@ -60,16 +61,16 @@
     <h2>Crear cuenta</h2>
 
     <form id="formSignIn" novalidate>
-      <input type="text" name="full_name" placeholder="Nombre completo" autocomplete="name" required>
+      <input type="text" name="full_name" placeholder="Nombre completo" autocomplete="name" required minlength="3">
       <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required>
-      <input type="password" name="password" placeholder="Contraseña" autocomplete="new-password" required>
-      <input type="tel" name="phone" placeholder="Teléfono (opcional)" autocomplete="tel">
+      <input type="password" name="password" placeholder="Contraseña (mín. 6)" autocomplete="new-password" required minlength="6">
+      <input type="tel" name="phone" placeholder="Teléfono (opcional)" autocomplete="tel" pattern="^[0-9+()\-\s]{7,20}$">
       <select name="preferred_lang">
         <option value="es" selected>Español</option>
         <option value="en">English</option>
       </select>
-      <button type="submit">Registrarme</button>
-      <div id="msg" class="msg"></div>
+      <button type="submit" id="btnSubmit">Registrarme</button>
+      <div id="msg" class="msg" aria-live="polite"></div>
     </form>
 
     <div class="meta">
@@ -80,13 +81,19 @@
   <script>
     const form = document.getElementById('formSignIn');
     const msgEl = document.getElementById('msg');
+    const btn = document.getElementById('btnSubmit');
+
+    function setMsg(text, color='#666'){ msgEl.style.color = color; msgEl.textContent = text; }
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      msgEl.style.color = '#666';
-      msgEl.textContent = 'Procesando...';
 
-      // Datos
+      // Validación básica del navegador
+      if (!form.reportValidity()) return;
+
+      btn.disabled = true;
+      setMsg('Procesando...','#666');
+
       const body = Object.fromEntries(new FormData(form).entries());
 
       try {
@@ -96,24 +103,22 @@
           body: JSON.stringify(body)
         });
 
-        // Evita errores cuando Netlify devuelve HTML en errores
         const text = await res.text();
         let data = {};
         try { data = text ? JSON.parse(text) : {}; } catch {}
 
         if (!res.ok || !data.ok) {
-          throw new Error(data.error || `HTTP ${res.status}`);
+          throw new Error(data.error || `Error HTTP ${res.status}`);
         }
 
-        msgEl.style.color = 'green';
-        msgEl.textContent = 'Cuenta creada correctamente ✅';
-        // (Opcional) guardar sesión básica
+        setMsg('Cuenta creada correctamente ✅', 'green');
         try { localStorage.setItem('user', JSON.stringify(data.user)); } catch {}
         setTimeout(() => { window.location.href = 'login.html'; }, 900);
 
       } catch (err) {
-        msgEl.style.color = '#c00';
-        msgEl.textContent = err?.message || 'Error al registrar';
+        setMsg(err?.message || 'Error al registrar', '#c00');
+      } finally {
+        btn.disabled = false;
       }
     });
   </script>
