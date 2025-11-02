@@ -17,23 +17,40 @@
   <p id="msg"></p>
 
   <script>
-    const form = document.getElementById('formSignIn');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const body = Object.fromEntries(new FormData(form).entries());
-      const res = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      const msg = document.getElementById('msg');
-      if (data.ok) {
-        localStorage.setItem('user', JSON.stringify(data.user));
-        msg.textContent = 'Cuenta creada correctamente ✅';
-        setTimeout(() => window.location.href = 'index.html', 800);
-      } else msg.textContent = data.error;
+  <script>
+document.getElementById('formSignIn').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+
+  // mientras validas el redirect, puedes apuntar directo a /.netlify/functions
+  const API = '/.netlify/functions/auth-signin'
+
+  try {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
     });
+
+    const text = await res.text();
+    let data = {};
+    try { data = text ? JSON.parse(text) : {}; } catch {}
+
+    if (!res.ok || !data.ok) {
+      const msg = data.error || `HTTP ${res.status}`;
+      throw new Error(msg);
+    }
+
+    localStorage.setItem('user', JSON.stringify(data.user));
+    document.getElementById('msg').textContent = 'Cuenta creada ✅';
+    setTimeout(()=> location.href='index.html', 800);
+  } catch (err) {
+    document.getElementById('msg').textContent = err.message || 'Error inesperado';
+  }
+});
+</script>
+
   </script>
 </body>
 </html>
+
