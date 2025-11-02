@@ -1,7 +1,6 @@
 import { Client } from "pg";
 
 const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Mismo criterio que el validador JS del front:
 const telRe   = /^[-0-9()+ ]{7,20}$/;
 
 function json(statusCode, body, headers = {}) {
@@ -33,19 +32,16 @@ export async function handler(event) {
     return json(405, { ok:false, error:"Method Not Allowed" });
   }
 
-  // Env vars mínimas para conectar
   const need = ["PGHOST","PGUSER","PGPASSWORD","PGDATABASE"];
   const missing = need.filter(k => !process.env[k]);
   if (missing.length) {
     return json(500, { ok:false, error:`DB env missing: ${missing.join(", ")}` });
   }
 
-  // Parseo
   let payload = {};
   try { payload = JSON.parse(event.body || "{}"); }
   catch { return json(400, { ok:false, error:"Invalid JSON" }); }
 
-  // Limpieza/validación
   const full_name = String(payload.full_name || "").trim();
   const email     = String(payload.email || "").trim().toLowerCase();
   const password  = String(payload.password || ""); // no se almacena
@@ -99,17 +95,22 @@ export async function handler(event) {
     return json(200, { ok:true, user: rows[0] });
 
   } catch (e) {
+    const debug = process.env.DEBUG === "true";
+    // Errores comunes con mensajes claros
     if (e?.code === "23505" || /duplicate key/i.test(String(e?.message))) {
-      return json(409, { ok:false, error:"Este correo ya está registrado" });
+      return json(409, { ok:false, error:"Este correo ya está registrado", ...(debug ? { code:e.code, detail:String(e.message) } : {}) });
     }
     if (e?.code === "22P02" || /invalid input value for enum/i.test(String(e?.message))) {
-      return json(400, { ok:false, error:"Valor inválido en role o preferred_lang" });
+      return json(400, { ok:false, error:"Valor inválido en role o preferred_lang", ...(debug ? { code:e.code, detail:String(e.message) } : {}) });
     }
     if (e?.code === "28P01" || /password authentication failed/i.test(String(e?.message))) {
-      return json(500, { ok:false, error:"Credenciales de base de datos inválidas" });
+      return json(500, { ok:false, error:"Credenciales de base de datos inválidas", ...(debug ? { code:e.code, detail:String(e.message) } : {}) });
     }
-    console.error("auth-signin error:", e);
-    return json(500, { ok:false, error:"Error interno" });
+    if (/no pg_hba\.conf entry|must use ssl|SSL/i.test(String(e?.message))) {
+      return json(500, { ok:false, error:"Conexión rechazada/SSL requerido. Prueba PGSSL=true", ...(debug ? { code:e.code, detail:String(e.message) } : {}) });
+    }
+    // Respuesta con detalle solo si DEBUG=true
+    return json(500, { ok:false, error:"Error interno", ...(debug ? { code:e.code || null, detail:String(e.message || e) } : {}) });
   } finally {
     try { await client.end(); } catch {}
   }
