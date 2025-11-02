@@ -64,14 +64,8 @@
       <input type="text" name="full_name" placeholder="Nombre completo" autocomplete="name" required minlength="3">
       <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required>
       <input type="password" name="password" placeholder="Contraseña (mín. 6)" autocomplete="new-password" required minlength="6">
-      <input
-        type="tel"
-        name="phone"
-        placeholder="Teléfono (opcional)"
-        autocomplete="tel"
-        inputmode="tel"
-        pattern="^[0-9()+\- ]{7,20}$"
-      >
+      <!-- SIN pattern para evitar el bug /v -->
+      <input type="tel" name="phone" placeholder="Teléfono (opcional)" autocomplete="tel" inputmode="tel">
       <select name="preferred_lang">
         <option value="es" selected>Español</option>
         <option value="en">English</option>
@@ -92,9 +86,28 @@
 
     const setMsg = (t, c='#666') => { msgEl.style.color = c; msgEl.textContent = t; };
 
+    // Validador JS (sin atributo pattern, sin flag /v)
+    const phoneOk = v => {
+      if (!v) return true; // opcional
+      return /^[-0-9()+ ]{7,20}$/.test(v);
+    };
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!form.reportValidity()) return;
+
+      // Validación básica nativa
+      if (!form.full_name.value || form.full_name.value.trim().length < 3) {
+        setMsg('Nombre muy corto', '#c00'); return;
+      }
+      if (!form.email.checkValidity()) {
+        setMsg('Email inválido', '#c00'); return;
+      }
+      if (!form.password.value || form.password.value.length < 6) {
+        setMsg('Contraseña muy corta (mín. 6)', '#c00'); return;
+      }
+      if (!phoneOk(form.phone.value.trim())) {
+        setMsg('Teléfono inválido (7-20 chars; dígitos, +, -, (, ), espacio)', '#c00'); return;
+      }
 
       btn.disabled = true;
       setMsg('Procesando...','#666');
