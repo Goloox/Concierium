@@ -1,6 +1,7 @@
 // CommonJS para Netlify Functions
 const { Client } = require("pg");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 const SCHEMA = process.env.DB_SCHEMA || "concierium";
 
@@ -10,6 +11,7 @@ const J = (status, body) => ({
   body: JSON.stringify(body),
 });
 
+// --- Conexión PostgreSQL ---
 function makeClient() {
   if (process.env.DATABASE_URL) {
     return new Client({
@@ -27,34 +29,37 @@ function makeClient() {
   });
 }
 
+// --- Main handler ---
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== "POST") {
-      return J(405, { ok: false, error: "Method Not Allowed" });
+      return J(405, { ok:false, error:"Method Not Allowed" });
     }
 
     if (!process.env.JWT_SECRET) {
-      return J(500, { ok: false, error: "Falta JWT_SECRET en variables de entorno" });
+      return J(500, { ok:false, error:"Falta JWT_SECRET en variables de entorno" });
     }
 
     let p = {};
     try { p = JSON.parse(event.body || "{}"); }
-    catch { return J(400, { ok:false, error:"Invalid JSON" }); }
+    catch { return J(400, { ok:false, error:"JSON inválido" }); }
 
-    const email = String(p.email || "").trim().toLowerCase();
-    // Nota: hoy no validamos contraseña porque la tabla no tiene columna de hash.
-    // const password = String(p.password || "");
+    const email    = String(p.email || "").trim().toLowerCase();
+    const password = String(p.password || "");
 
-    if (!email) return J(400, { ok:false, error:"Email requerido" });
+    if (!email || !password) {
+      return J(400, { ok:false, error:"Email y contraseña requeridos" });
+    }
 
     const client = makeClient();
     await client.connect();
     await client.query(`SET search_path TO ${SCHEMA}, public`);
 
+    // --- Buscar usuario ---
     const q = `
       SELECT id, full_name, email::text AS email,
              role::text AS role, preferred_lang::text AS lang,
-             is_active
+             is_active, password_hash
       FROM ${SCHEMA}.users
       WHERE email = $1::citext
       LIMIT 1
@@ -63,20 +68,30 @@ exports.handler = async (event) => {
     await client.end();
 
     if (!rows.length) {
-      return J(401, { ok:false, error:"Usuario no encontrado" });
+      return J(401, { ok:false, error:"Credenciales inválidas" });
     }
 
     const u = rows[0];
+
     if (!u.is_active) {
       return J(403, { ok:false, error:"Usuario inactivo" });
     }
 
-    // Mapeo de rol a home
-    // admin y superadmin => /admin ; cualquier otro => /cliente
+    if (!u.password_hash) {
+      return J(401, { ok:false, error:"Este usuario no tiene contraseña configurada" });
+    }
+
+    // --- Validar contraseña ---
+    const okPass = await bcrypt.compare(password, u.password_hash);
+    if (!okPass) {
+      return J(401, { ok:false, error:"Credenciales inválidas" });
+    }
+
+    // --- Determinar ruta por rol ---
     const role = String(u.role || "").toLowerCase();
     const dest = (role === "admin" || role === "superadmin") ? "/admin/" : "/cliente/";
 
-    // Firmar JWT (12h)
+    // --- Firmar JWT (12h) ---
     const token = jwt.sign(
       {
         sub: u.id,
@@ -105,8 +120,8 @@ exports.handler = async (event) => {
 
   } catch (e) {
     console.error("auth-login error:", e);
-    const code = e && e.code ? e.code : null;
-    const msg  = String(e && e.message ? e.message : e);
+    const code = e?.code || null;
+    const msg  = String(e?.message || e);
 
     if (code === "28P01" || /password authentication failed/i.test(msg)) {
       return J(500, { ok:false, error:"Credenciales de base de datos inválidas" });
