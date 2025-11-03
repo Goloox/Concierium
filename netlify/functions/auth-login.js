@@ -42,7 +42,7 @@ exports.handler = async (event) => {
     catch { return J(400, { ok:false, error:"Invalid JSON" }); }
 
     const email = String(p.email || "").trim().toLowerCase();
-    // Hoy no podemos validar password porque no existe columna en la BD:
+    // Nota: hoy no validamos contraseña porque la tabla no tiene columna de hash.
     // const password = String(p.password || "");
 
     if (!email) return J(400, { ok:false, error:"Email requerido" });
@@ -63,7 +63,6 @@ exports.handler = async (event) => {
     await client.end();
 
     if (!rows.length) {
-      // En el futuro: devolver 401 genérico "credenciales inválidas"
       return J(401, { ok:false, error:"Usuario no encontrado" });
     }
 
@@ -73,9 +72,9 @@ exports.handler = async (event) => {
     }
 
     // Mapeo de rol a home
-    // admin y superadmin => homeadmin; cualquier otro => homecliente
+    // admin y superadmin => /admin ; cualquier otro => /cliente
     const role = String(u.role || "").toLowerCase();
-    const dest = (role === "admin" || role === "superadmin") ? "/homeadmin/" : "/homecliente/";
+    const dest = (role === "admin" || role === "superadmin") ? "/admin/" : "/cliente/";
 
     // Firmar JWT (12h)
     const token = jwt.sign(
