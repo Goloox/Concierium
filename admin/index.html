@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Admin | Concierium</title></head>
+<body>
+  <h1>Panel Admin</h1>
+  <div id="who"></div>
+  <script src="/js/auth-guard.js"></script>
+  <script>
+    try {
+      const u = JSON.parse(localStorage.getItem('user')||'null');
+      document.getElementById('who').textContent = `Hola, ${u.full_name} (${u.role})`;
+    } catch {}
+  </script>
+</body>
+</html>
