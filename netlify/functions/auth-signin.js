@@ -1,11 +1,8 @@
-// CommonJS para evitar issues ESM en runtime de Netlify
+// CommonJS para Netlify Functions
 const { Client } = require("pg");
+const bcrypt = require("bcryptjs");
 
 const SCHEMA = process.env.DB_SCHEMA || "concierium";
-
-// Validaciones simples
-const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const telRe   = /^[-0-9()+ ]{7,20}$/;
 
 const J = (status, body) => ({
   statusCode: status,
@@ -13,76 +10,74 @@ const J = (status, body) => ({
   body: JSON.stringify(body),
 });
 
-// Crea el cliente priorizando DATABASE_URL (lo tienes OK)
 function makeClient() {
   if (process.env.DATABASE_URL) {
     return new Client({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false } // sslmode=require
+      ssl: { rejectUnauthorized: false },
     });
   }
-  // Fallback por si alguien borra DATABASE_URL
   return new Client({
     host: process.env.PGHOST,
     user: process.env.PGUSER,
     password: process.env.PGPASSWORD,
     database: process.env.PGDATABASE,
     port: +(process.env.PGPORT || 5432),
-    ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined
+    ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined,
   });
 }
+
+const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const telRe   = /^[-0-9()+ ]{7,20}$/;
 
 exports.handler = async (event) => {
   try {
     if (event.httpMethod !== "POST") {
-      return J(405, { ok: false, error: "Method Not Allowed" });
+      return J(405, { ok:false, error:"Method Not Allowed" });
     }
 
-    // Asegura credenciales por alguna vía
-    const hasUrl = !!process.env.DATABASE_URL;
-    const hasPieces = ["PGHOST","PGUSER","PGPASSWORD","PGDATABASE"].every(k => !!process.env[k]);
-    if (!hasUrl && !hasPieces) {
-      return J(500, { ok:false, error:"Faltan credenciales: pon DATABASE_URL o PGHOST/PGUSER/PGPASSWORD/PGDATABASE" });
-    }
-
-    // Parseo & validación
     let p = {};
     try { p = JSON.parse(event.body || "{}"); }
     catch { return J(400, { ok:false, error:"Invalid JSON" }); }
 
-    const full_name = String(p.full_name || "").trim();
-    const email     = String(p.email || "").trim().toLowerCase();
-    const password  = String(p.password || ""); // NO se guarda (no hay columna)
-    const phone     = String(p.phone || "").trim();
-    const preferred = p.preferred_lang === "en" ? "en" : "es"; // lang_code enum
+    const full_name = String(p.full_name||"").trim();
+    const email     = String(p.email||"").trim().toLowerCase();
+    const password  = String(p.password||"");
+    const phone     = String(p.phone||"").trim();
+    const preferred = p.preferred_lang === "en" ? "en" : "es";
 
-    if (full_name.length < 3)           return J(400, { ok:false, error:"Nombre muy corto" });
-    if (!emailRe.test(email))           return J(400, { ok:false, error:"Email inválido" });
-    if (password.length < 6)            return J(400, { ok:false, error:"Contraseña muy corta (mín. 6)" });
-    if (phone && !telRe.test(phone))    return J(400, { ok:false, error:"Teléfono inválido" });
+    // Validaciones
+    if (full_name.length < 3)         return J(400,{ok:false,error:"Nombre muy corto"});
+    if (!emailRe.test(email))         return J(400,{ok:false,error:"Email inválido"});
+    if (password.length < 6)          return J(400,{ok:false,error:"Contraseña muy corta (mín. 6)"});
+    if (phone && !telRe.test(phone))  return J(400,{ok:false,error:"Teléfono inválido"});
+
+    // Hash de contraseña
+    const password_hash = await bcrypt.hash(password, 10);
 
     const client = makeClient();
     await client.connect();
     await client.query(`SET search_path TO ${SCHEMA}, public`);
 
-    // Insert directo con tipos calificados por esquema
+    // Rol por defecto válido según tu enum
+    const role = "client";
+
     const q = `
       INSERT INTO ${SCHEMA}.users
-        (full_name, email, phone, role, preferred_lang, is_active, mfa_enabled)
+        (full_name, email, phone, role, preferred_lang, is_active, mfa_enabled, password_hash)
       VALUES
-        ($1, $2::citext, NULLIF($3,''), $4::${SCHEMA}.role_type, $5::${SCHEMA}.lang_code, true, false)
+        ($1, $2::citext, NULLIF($3,''), $4::${SCHEMA}.role_type, $5::${SCHEMA}.lang_code, true, false, $6)
       RETURNING id, full_name, email::text, phone, role::text, preferred_lang::text, is_active, mfa_enabled, created_at
     `;
-    const vals = [ full_name, email, phone, "client", preferred ];
+    const vals = [ full_name, email, phone, role, preferred, password_hash ];
     const { rows } = await client.query(q, vals);
     await client.end();
 
     return J(200, { ok:true, user: rows[0] });
 
   } catch (e) {
-    // Errores comunes con mensaje claro
-    const code = e && e.code ? e.code : null;
-    const msg  = String(e && e.message ? e.message : e);
+    const code = e?.code || null;
+    const msg  = String(e?.message || e);
 
     if (code === "23505" || /duplicate key/i.test(msg)) {
       return J(409, { ok:false, error:"Este correo ya está registrado" });
@@ -103,7 +98,7 @@ exports.handler = async (event) => {
       return J(500, { ok:false, error:"Conexión rechazada/SSL requerido" });
     }
 
-    console.error("auth-signin crash:", e);
+    console.error("auth-signin error:", e);
     return J(500, { ok:false, error:"Error interno" });
   }
 };
