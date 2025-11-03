@@ -1,15 +1,425 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Cliente | Concierium</title></head>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Concierium | Cliente</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0c0c0f;
+      --panel:#121218;
+      --muted:#9aa3b2;
+      --text:#e9ecf1;
+      --brand:#00c9a7;
+      --brand-2:#8cf5e4;
+      --card:#161622;
+      --card-2:#10101a;
+      --ok:#19c37d;
+      --warn:#f5a524;
+      --err:#ef4444;
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text); background:
+        radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
+        radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),
+        var(--bg);
+      display:grid; grid-template-rows:auto 1fr;
+    }
+
+    /* Header */
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      display:flex; align-items:center; gap:14px;
+      padding:14px 18px; background:rgba(18,18,24,.75); backdrop-filter: blur(8px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .brand{display:flex; align-items:center; gap:10px}
+    .brand img{width:28px;height:28px;object-fit:contain;border-radius:8px}
+    .brand b{letter-spacing:.4px}
+    .top-actions{margin-left:auto; display:flex; align-items:center; gap:10px}
+    .btn{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));
+      color:var(--text); padding:10px 12px; border-radius:12px; cursor:pointer;
+      font-weight:600; font-size:14px; transition:transform .06s ease, filter .2s ease;
+    }
+    .btn:hover{filter:brightness(1.1)}
+    .btn:active{transform:translateY(1px)}
+    .btn.brand{border-color:rgba(0,201,167,.35); box-shadow:0 0 0 3px rgba(0,201,167,.12) inset}
+    .avatar{
+      width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--brand),#4050ff);
+      display:grid;place-items:center;font-weight:700;color:#0b0b0f
+    }
+
+    /* Layout */
+    .layout{display:grid; grid-template-columns:260px 1fr; min-height:calc(100vh - 64px)}
+    @media (max-width: 980px){ .layout{grid-template-columns:1fr} .sidebar{position:sticky; top:64px; z-index:40} }
+
+    /* Sidebar */
+    .sidebar{
+      padding:18px; background:rgba(16,16,26,.72); border-right:1px solid rgba(255,255,255,.06);
+    }
+    .side-group{margin-bottom:18px}
+    .side-title{font-size:12px; text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin:12px 10px}
+    .side-item{
+      display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; cursor:pointer;
+      color:var(--text); text-decoration:none;
+    }
+    .side-item:hover{background:rgba(255,255,255,.06)}
+    .side-item.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05)); border:1px solid rgba(0,201,167,.25)}
+
+    /* Main */
+    .main{padding:24px}
+    .greet{
+      display:grid; gap:6px; margin-bottom:16px;
+    }
+    .greet .hello{font-size:22px; font-weight:700}
+    .greet .sub{color:var(--muted); font-size:14px}
+
+    /* Grid cards */
+    .grid{
+      display:grid; gap:16px;
+      grid-template-columns: repeat(12, minmax(0,1fr));
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);
+    }
+
+    .col-4{grid-column: span 4}
+    .col-6{grid-column: span 6}
+    .col-8{grid-column: span 8}
+    .col-12{grid-column: span 12}
+
+    @media (max-width:1200px){ .col-6,.col-8{grid-column: span 12} .col-4{grid-column: span 6} }
+    @media (max-width:780px){ .col-4{grid-column: span 12} }
+
+    .card h3{margin:0 0 8px; font-size:16px}
+    .muted{color:var(--muted); font-size:13px}
+
+    /* Hero card */
+    .hero{
+      display:grid; grid-template-columns:1fr 280px; gap:16px; align-items:center;
+      background:linear-gradient(135deg, rgba(0,201,167,.18), rgba(64,80,255,.18));
+      border:1px solid rgba(0,201,167,.25);
+    }
+    .hero .cta{display:flex; gap:10px; margin-top:10px}
+    .hero .cta .btn{background:#0f121a}
+    .hero-ill{
+      border-radius:14px; min-height:140px;
+      background:
+        radial-gradient(300px 200px at 70% 10%, rgba(0,201,167,.45), transparent 60%),
+        radial-gradient(300px 200px at 10% 90%, rgba(64,80,255,.45), transparent 60%),
+        linear-gradient(180deg, #0e1020, #0c0f17);
+      display:grid; place-items:center; font-weight:700; letter-spacing:.08em; color:#cfeff7;
+    }
+    @media (max-width:900px){ .hero{grid-template-columns:1fr} }
+
+    /* Small stats */
+    .kpi{display:flex; align-items:center; gap:12px}
+    .kpi b{font-size:22px}
+    .pill{padding:6px 10px; border-radius:999px; font-size:12px; border:1px solid rgba(255,255,255,.12); color:var(--muted)}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+
+    /* Table */
+    table{width:100%; border-collapse:separate; border-spacing:0 8px}
+    thead th{font-size:12px; color:var(--muted); text-align:left; font-weight:500; padding:0 10px}
+    tbody tr{ background:var(--card); border:1px solid rgba(255,255,255,.06) }
+    tbody td{ padding:12px 10px; border-top:1px solid rgba(255,255,255,.06) }
+    tbody tr{ border-radius:12px; overflow:hidden }
+    tbody tr td:first-child{ border-left:1px solid rgba(255,255,255,.06) }
+    tbody tr td:last-child{ border-right:1px solid rgba(255,255,255,.06) }
+
+    /* Footer */
+    .footer{margin-top:18px; color:var(--muted); font-size:12px; text-align:center}
+
+    /* Tiny icons */
+    .ico{width:16px;height:16px;display:inline-block}
+  </style>
+</head>
 <body>
-  <h1>Home Cliente</h1>
-  <div id="who"></div>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="/img/logo.png" alt="Concierium"/>
+      <b>Concierium</b>
+      <span class="pill">Cliente</span>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn brand" id="btnNew">
+        <!-- plus icon -->
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Nueva solicitud
+      </button>
+      <button class="btn" id="btnSupport">
+        <!-- chat icon -->
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M21 12c0 3.866-3.582 7-8 7a8.8 8.8 0 0 1-3.7-.8L3 20l1.9-4.3A7.8 7.8 0 0 1 3 12c0-3.866 3.582-7 8-7s8 3.134 8 7Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Soporte
+      </button>
+      <div class="avatar" id="initials">C</div>
+      <button class="btn" id="btnLogout" title="Cerrar sesión">
+        <!-- power icon -->
+        <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 3v10M6.6 5.6a8 8 0 1 0 10.8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Salir
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="side-group">
+        <div class="side-title">Navegación</div>
+        <a class="side-item active" href="#">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M3 10.5 12 3l9 7.5V21H3V10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Home
+        </a>
+        <a class="side-item" href="#" id="linkRequests">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Mis solicitudes
+        </a>
+        <a class="side-item" href="#" id="linkExplore">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 20a8 8 0 1 0-8-8 8 8 0 0 0 8 8Zm4-10-2 5-5 2 2-5 5-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Explorar servicios
+        </a>
+      </div>
+
+      <div class="side-group">
+        <div class="side-title">Soporte</div>
+        <a class="side-item" href="#" id="linkHelp">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 18h.01M9 9a3 3 0 1 1 5.3 2 3.5 3.5 0 0 0-2.3 3v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Centro de ayuda
+        </a>
+        <a class="side-item" href="#" id="linkContact">
+          <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M21 10v8a2 2 0 0 1-2 2H7l-4 3V5a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Contacto
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <section class="greet">
+        <div class="hello">Hola, <span id="userName">Cliente</span> 👋</div>
+        <div class="sub">Aquí verás tus solicitudes, estado y recomendaciones personalizadas.</div>
+      </section>
+
+      <section class="grid">
+        <!-- Hero -->
+        <div class="card hero col-12">
+          <div>
+            <h3>Planifica tu próxima experiencia</h3>
+            <p class="muted">Alojamiento, tours, cenas privadas y traslados VIP — todo en un solo lugar.</p>
+            <div class="cta">
+              <button class="btn brand" id="ctaNew">
+                <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Crear solicitud
+              </button>
+              <button class="btn" id="ctaExplore">
+                <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 20a8 8 0 1 0-8-8 8 8 0 0 0 8 8Zm4-10-2 5-5 2 2-5 5-2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Explorar catálogo
+              </button>
+            </div>
+          </div>
+          <div class="hero-ill">Concierium</div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="card col-4">
+          <h3>Solicitudes activas</h3>
+          <div class="kpi">
+            <b id="kpiActive">0</b>
+            <span class="pill">en curso</span>
+          </div>
+          <div class="muted" id="kpiActiveNote">Sin actividad reciente</div>
+        </div>
+
+        <div class="card col-4">
+          <h3>Último estado</h3>
+          <div class="kpi">
+            <b id="kpiLastStatus">—</b>
+            <span class="pill" id="kpiLastStatusPill">—</span>
+          </div>
+          <div class="muted" id="kpiLastStatusNote">Aún no hay actualizaciones</div>
+        </div>
+
+        <div class="card col-4">
+          <h3>Recomendado</h3>
+          <div class="kpi">
+            <b id="kpiReco">Bahamas</b>
+            <span class="pill">Destino</span>
+          </div>
+          <div class="muted">Basado en preferencias recientes</div>
+        </div>
+
+        <!-- Tabla de solicitudes -->
+        <div class="card col-12">
+          <h3>Mis solicitudes</h3>
+          <div class="muted" style="margin-bottom:8px">Las últimas 5</div>
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>Folio</th>
+                  <th>Servicio</th>
+                  <th>Destino</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="tblRequests">
+                <!-- filas dinámicas -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="card col-6">
+          <h3>Consejos para tu viaje</h3>
+          <ul class="muted" id="tips" style="margin:8px 0 0 18px; line-height:1.7">
+            <li>Confirma tus fechas ideales con 2–3 alternativas.</li>
+            <li>Indica restricciones alimenticias si planeas cenas privadas.</li>
+            <li>Para tours en mar, considera horas de menor viento/oleaje.</li>
+          </ul>
+        </div>
+
+        <div class="card col-6">
+          <h3>Atajos</h3>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px">
+            <button class="btn" id="shortcutInvoices">
+              <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16l4-2 4 2 4-2 4 2V8l-6-6Z" stroke="currentColor" stroke-width="2"/></svg>
+              Mis comprobantes
+            </button>
+            <button class="btn" id="shortcutProfile">
+              <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm7 9a7 7 0 0 0-14 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Mi perfil
+            </button>
+            <button class="btn" id="shortcutSupport">
+              <svg class="ico" viewBox="0 0 24 24" fill="none"><path d="M21 10v8a2 2 0 0 1-2 2H7l-4 3V5a2 2 0 0 1 2-2h9" stroke="currentColor" stroke-width="2"/></svg>
+              Chat soporte
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer">
+        © <span id="year"></span> Concierium. Todos los derechos reservados.
+      </div>
+    </main>
+  </div>
+
+  <!-- Guard de autenticación/rol -->
   <script src="/js/auth-guard.js"></script>
+
   <script>
-    try {
-      const u = JSON.parse(localStorage.getItem('user')||'null');
-      document.getElementById('who').textContent = `Hola, ${u.full_name} (${u.role})`;
-    } catch {}
+    // Utilidades
+    const $ = (s, el=document) => el.querySelector(s);
+
+    // Cargar datos de user
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch {}
+
+    // Saludo + avatar iniciales
+    (function hydrateUser(){
+      const name = user?.full_name || 'Cliente';
+      $('#userName').textContent = name.split(' ')[0] || 'Cliente';
+      const initials = name.trim().split(/\s+/).slice(0,2).map(p=>p[0]).join('').toUpperCase() || 'C';
+      $('#initials').textContent = initials;
+    })();
+
+    // Mock de datos de solicitudes (hasta que conectes un endpoint real)
+    const sample = [
+      { id:'RQ-1024', servicio:'Alojamiento', destino:'Costa Rica', fecha:'2025-11-05', estado:'curation' },
+      { id:'RQ-1011', servicio:'Tour privado', destino:'Bahamas',   fecha:'2025-10-29', estado:'proposal_sent' },
+      { id:'RQ-0999', servicio:'Cena privada', destino:'Miami',     fecha:'2025-10-15', estado:'confirmed' },
+      { id:'RQ-0992', servicio:'Traslado VIP', destino:'Costa Rica',fecha:'2025-10-10', estado:'closed' },
+      { id:'RQ-0980', servicio:'Tour privado', destino:'Costa Rica',fecha:'2025-10-01', estado:'discarded' },
+    ];
+
+    const STATUS_MAP = {
+      new:{label:'Nuevo', cls:''},
+      curation:{label:'Curación', cls:'warn'},
+      proposal_sent:{label:'Propuesta enviada', cls:'ok'},
+      confirmed:{label:'Confirmado', cls:'ok'},
+      closed:{label:'Cerrado', cls:''},
+      discarded:{label:'Descartado', cls:'err'}
+    };
+
+    function renderRequests(rows){
+      const tb = $('#tblRequests');
+      tb.innerHTML = '';
+      rows.forEach(r=>{
+        const st = STATUS_MAP[r.estado] || {label:r.estado, cls:''};
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.id}</td>
+          <td>${r.servicio}</td>
+          <td>${r.destino}</td>
+          <td>${r.fecha}</td>
+          <td><span class="pill ${st.cls}">${st.label}</span></td>
+          <td style="text-align:right">
+            <button class="btn" data-id="${r.id}">Detalle</button>
+          </td>
+        `;
+        tb.appendChild(tr);
+      });
+    }
+
+    // KPIs simples a partir del mock
+    function hydrateKPIs(rows){
+      const act = rows.filter(r=>['new','curation','proposal_sent','confirmed'].includes(r.estado)).length;
+      $('#kpiActive').textContent = act;
+      $('#kpiActiveNote').textContent = act>0 ? 'Tienes solicitudes en curso' : 'Sin actividad reciente';
+
+      const last = rows[0];
+      if (last) {
+        const st = STATUS_MAP[last.estado] || {label:last.estado};
+        $('#kpiLastStatus').textContent = st.label;
+        $('#kpiLastStatusPill').textContent = st.label;
+        $('#kpiLastStatusPill').className = 'pill ' + (STATUS_MAP[last.estado]?.cls||'');
+        $('#kpiLastStatusNote').textContent = `Última: ${last.id} – ${last.fecha}`;
+      }
+    }
+
+    // Enlaces & CTA
+    function wireActions(){
+      const go = (path)=>{ /* cambia a tus rutas reales si las tienes */ alert('Navegar a: ' + path); };
+      $('#btnNew').onclick = ()=> go('/cliente/nueva-solicitud');
+      $('#ctaNew').onclick = ()=> go('/cliente/nueva-solicitud');
+      $('#ctaExplore').onclick = ()=> go('/cliente/explorar');
+      $('#btnSupport').onclick = ()=> go('/cliente/soporte');
+      $('#shortcutInvoices').onclick = ()=> go('/cliente/comprobantes');
+      $('#shortcutProfile').onclick = ()=> go('/cliente/perfil');
+      $('#shortcutSupport').onclick = ()=> go('/cliente/soporte');
+      $('#linkRequests').onclick = (e)=>{ e.preventDefault(); go('/cliente/solicitudes'); };
+      $('#linkExplore').onclick = (e)=>{ e.preventDefault(); go('/cliente/explorar'); };
+
+      // Logout
+      $('#btnLogout').onclick = ()=>{
+        try { localStorage.removeItem('token'); localStorage.removeItem('user'); } catch {}
+        location.replace('/login.html');
+      };
+    }
+
+    // Footer year
+    $('#year').textContent = new Date().getFullYear();
+
+    // Render inicial
+    renderRequests(sample);
+    hydrateKPIs(sample);
+    wireActions();
   </script>
 </body>
 </html>
