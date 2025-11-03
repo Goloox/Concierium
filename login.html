@@ -37,6 +37,7 @@
       <img src="img/logo.png" alt="Concierium"><span>Concierium</span>
     </div>
     <h2>Iniciar sesión</h2>
+
     <form id="formLogin" novalidate>
       <input type="email" name="email" placeholder="Correo electrónico" autocomplete="email" required>
       <!-- Campo de contraseña presente por UX, pero hoy no se valida en servidor (no hay hash en BD) -->
@@ -44,6 +45,7 @@
       <button type="submit" id="btnSubmit">Entrar</button>
       <div id="msg" class="msg" aria-live="polite"></div>
     </form>
+
     <div class="meta">
       ¿No tienes cuenta? <a href="signin.html">Crea una</a>
     </div>
@@ -56,11 +58,24 @@
 
     const setMsg = (t,c='#666') => { msg.style.color=c; msg.textContent=t; };
 
+    // Evita enviar con Enter varias veces si hay errores de red
+    form.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && btn.disabled) e.preventDefault();
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      if (!form.email.checkValidity()) { setMsg('Email inválido','#c00'); return; }
+
+      const email = (form.email.value || '').trim();
+      form.email.value = email;
+      if (!form.email.checkValidity() || !email) {
+        setMsg('Email inválido','#c00'); 
+        return;
+      }
 
       btn.disabled = true;
+      const prev = btn.textContent;
+      btn.textContent = 'Verificando...';
       setMsg('Verificando...','#666');
 
       const body = Object.fromEntries(new FormData(form).entries());
@@ -71,11 +86,14 @@
           headers:{ 'Content-Type':'application/json' },
           body: JSON.stringify(body)
         });
+
         const text = await res.text();
         let data = {};
         try { data = text ? JSON.parse(text) : {}; } catch {}
 
-        if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+        if (!res.ok || !data.ok) {
+          throw new Error(data.error || `HTTP ${res.status}`);
+        }
 
         // Guardar sesión
         try {
@@ -84,13 +102,18 @@
         } catch {}
 
         setMsg('Bienvenido, redirigiendo...','green');
+
         // Redirigir según lo que indica el backend (según rol)
-        location.href = data.redirectTo || '/homecliente/';
+        // admin/superadmin -> /admin/ ; otros -> /cliente/
+        location.href = data.redirectTo || '/cliente/';
 
       } catch (err) {
-        setMsg(err?.message || 'Error al iniciar sesión', '#c00');
+        // Manejo claro para 401/403/409/5xx
+        const msgText = (err && err.message) ? err.message : 'Error al iniciar sesión';
+        setMsg(msgText, '#c00');
       } finally {
         btn.disabled = false;
+        btn.textContent = prev;
       }
     });
   </script>
