@@ -1,15 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Admin | Concierium</title></head>
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Concierium | Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--radius:16px;--shadow:0 12px 30px rgba(0,0,0,.35)}
+    *{box-sizing:border-box} html,body{height:100%}
+    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;display:grid;grid-template-rows:auto 1fr}
+    .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}.pill{padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);color:var(--muted)}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
+    .main{padding:24px}
+    .grid{display:grid;gap:16px;grid-template-columns: repeat(12, minmax(0,1fr))}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .col-3{grid-column: span 3}.col-6{grid-column: span 6}.col-9{grid-column: span 9}.col-12{grid-column: span 12}
+    @media (max-width:1200px){ .col-6,.col-9{grid-column: span 12} .col-3{grid-column: span 6}} @media (max-width:780px){ .col-3{grid-column: span 12} }
+    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
+    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:12px 10px}
+    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+  </style>
+</head>
 <body>
-  <h1>Panel Admin</h1>
-  <div id="who"></div>
+  <header class="topbar">
+    <div class="brand"><img src="/img/logo.png" alt="Concierium"/><b>Concierium</b><span class="pill">Admin</span></div>
+    <div style="margin-left:auto;display:flex;gap:10px">
+      <button class="btn" id="btnRefresh">Refrescar</button>
+      <button class="btn" id="btnLogout">Salir</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="grid">
+      <div class="card col-3">
+        <h3>Solicitudes totales</h3>
+        <div style="font-size:28px;font-weight:700" id="kpiTotal">—</div>
+      </div>
+      <div class="card col-9">
+        <h3>Por estado</h3>
+        <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+
+      <div class="card col-6">
+        <h3>Últimas 10 solicitudes</h3>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Folio</th><th>Cliente</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th></tr></thead>
+            <tbody id="tblRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card col-6">
+        <h3>Alertas SLA</h3>
+        <div style="font-size:12px;color:#9aa3b2;margin-bottom:6px">> 2h sin atención o >48h sin propuesta</div>
+        <div style="overflow:auto">
+          <table>
+            <thead><tr><th>Folio</th><th>Creada</th><th>1ª Atención</th><th>Propuesta</th><th>Brechas</th></tr></thead>
+            <tbody id="tblSLA"><tr><td colspan="5">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
   <script src="/js/auth-guard.js"></script>
   <script>
-    try {
-      const u = JSON.parse(localStorage.getItem('user')||'null');
-      document.getElementById('who').textContent = `Hola, ${u.full_name} (${u.role})`;
-    } catch {}
+    const token = localStorage.getItem('token')||'';
+    const $ = (s,el=document)=>el.querySelector(s);
+
+    function pill(text, cls=''){ const span=document.createElement('span'); span.textContent=text; span.style.cssText='padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);'; if(cls==='ok')span.style.color='#19c37d'; if(cls==='warn')span.style.color='#f5a524'; if(cls==='err')span.style.color='#ef4444'; return span; }
+
+    const STATUS_CLS = { new:'', curation:'warn', proposal_sent:'ok', confirmed:'ok', closed:'', discarded:'err' };
+
+    async function loadAdmin(){
+      try{
+        const res = await fetch('/.netlify/functions/admin-dashboard', { headers:{ Authorization:'Bearer '+token } });
+        const data = await res.json();
+        if(!data.ok) throw new Error(data.error||'Error');
+
+        // Total
+        $('#kpiTotal').textContent = data.total;
+
+        // Por estado
+        const chips = $('#chips'); chips.innerHTML='';
+        data.por_estado.forEach(r=>{
+          const c = STATUS_CLS[r.status]||'';
+          const el = pill(`${r.status}: ${r.total}`, c);
+          chips.appendChild(el);
+        });
+
+        // Recientes
+        const tbR = $('#tblRecent'); tbR.innerHTML='';
+        if(!data.recientes.length){
+          tbR.innerHTML='<tr><td colspan="6">Sin registros</td></tr>';
+        }else{
+          data.recientes.forEach(r=>{
+            const cls = STATUS_CLS[r.estado]||'';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.id}</td>
+              <td>${r.cliente}</td>
+              <td>${r.servicio}</td>
+              <td>${r.destino}</td>
+              <td><span class="${cls}">${r.estado}</span></td>
+              <td>${r.creada}</td>
+            `;
+            tbR.appendChild(tr);
+          });
+        }
+
+        // SLA
+        const tbS = $('#tblSLA'); tbS.innerHTML='';
+        if(!data.sla.length){
+          tbS.innerHTML='<tr><td colspan="5">Sin brechas</td></tr>';
+        }else{
+          data.sla.forEach(r=>{
+            const tags=[];
+            if(r.breach_first_attention_2h) tags.push('>2h atenc.');
+            if(r.breach_proposal_48h) tags.push('>48h propuesta');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${r.id}</td>
+              <td>${r.created_at?.slice(0,19).replace('T',' ')||'—'}</td>
+              <td>${r.first_change_at?.slice(0,19).replace('T',' ')||'—'}</td>
+              <td>${r.proposal_at?.slice(0,19).replace('T',' ')||'—'}</td>
+              <td>${tags.join(' | ') || '—'}</td>
+            `;
+            tbS.appendChild(tr);
+          });
+        }
+
+      }catch(e){
+        console.error(e);
+        alert('No se pudo cargar el dashboard admin');
+      }
+    }
+
+    document.getElementById('btnRefresh').onclick = loadAdmin;
+    document.getElementById('btnLogout').onclick = ()=>{ localStorage.clear(); location.replace('/login.html'); };
+
+    loadAdmin();
   </script>
 </body>
 </html>
