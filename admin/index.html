@@ -5,142 +5,389 @@
   <title>Concierium | Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
-    :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--radius:16px;--shadow:0 12px 30px rgba(0,0,0,.35)}
+    :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
     *{box-sizing:border-box} html,body{height:100%}
     body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;display:grid;grid-template-rows:auto 1fr}
-    .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}.pill{padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);color:var(--muted)}
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}
     .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
-    .main{padding:24px}
-    .grid{display:grid;gap:16px;grid-template-columns: repeat(12, minmax(0,1fr))}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
-    .col-3{grid-column: span 3}.col-6{grid-column: span 6}.col-9{grid-column: span 9}.col-12{grid-column: span 12}
-    @media (max-width:1200px){ .col-6,.col-9{grid-column: span 12} .col-3{grid-column: span 6}} @media (max-width:780px){ .col-3{grid-column: span 12} }
+    .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
+    aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
+    .nav{display:grid;gap:8px}
+    .nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
+    .nav a:hover{background:rgba(255,255,255,.06)} .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
+    main{padding:20px}
+    h2{margin:10px 0 12px}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .col-6{grid-column:span 6}.col-12{grid-column:span 12}
+    @media (max-width:1100px){ .col-6{grid-column:span 12} }
+    label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
+    input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1018;color:var(--text)}
     table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
-    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:12px 10px}
-    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
+    .muted{color:var(--muted)} .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><img src="/img/logo.png" alt="Concierium"/><b>Concierium</b><span class="pill">Admin</span></div>
+  <header>
+    <div class="brand"><img src="/img/logo.png" alt=""/><b>Concierium</b><span style="margin-left:8px;color:#9aa3b2">Admin</span></div>
     <div style="margin-left:auto;display:flex;gap:10px">
-      <button class="btn" id="btnRefresh">Refrescar</button>
       <button class="btn" id="btnLogout">Salir</button>
     </div>
   </header>
 
-  <main class="main">
-    <section class="grid">
-      <div class="card col-3">
-        <h3>Solicitudes totales</h3>
-        <div style="font-size:28px;font-weight:700" id="kpiTotal">—</div>
-      </div>
-      <div class="card col-9">
-        <h3>Por estado</h3>
-        <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-      </div>
+  <div class="wrap">
+    <aside>
+      <nav class="nav">
+        <a href="#dash" class="active">Dashboard</a>
+        <a href="#destinos">Destinos</a>
+        <a href="#proveedores">Proveedores</a>
+        <a href="#servicios">Servicios</a>
+        <a href="#solicitudes">Solicitudes</a>
+      </nav>
+    </aside>
 
-      <div class="card col-6">
-        <h3>Últimas 10 solicitudes</h3>
-        <div style="overflow:auto">
-          <table>
-            <thead><tr><th>Folio</th><th>Cliente</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th></tr></thead>
-            <tbody id="tblRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
-          </table>
+    <main>
+      <!-- DASHBOARD -->
+      <section id="dash" class="section">
+        <h2>Resumen</h2>
+        <div class="grid">
+          <div class="card col-12">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div><b>Total solicitudes:</b> <span id="kpiTotal">—</span></div>
+              <div id="chips" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+              <button class="btn" id="btnRefresh">Refrescar</button>
+            </div>
+          </div>
+          <div class="card col-6">
+            <h3>Recientes</h3>
+            <div style="overflow:auto">
+              <table>
+                <thead><tr><th>Folio</th><th>Cliente</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th></tr></thead>
+                <tbody id="tblRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="card col-6">
+            <h3>Alertas SLA</h3>
+            <div class="muted">> 2h sin atención o >48h sin propuesta</div>
+            <div style="overflow:auto">
+              <table>
+                <thead><tr><th>Folio</th><th>Creada</th><th>1ª Atención</th><th>Propuesta</th><th>Brechas</th></tr></thead>
+                <tbody id="tblSLA"><tr><td colspan="5">Cargando…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div class="card col-6">
-        <h3>Alertas SLA</h3>
-        <div style="font-size:12px;color:#9aa3b2;margin-bottom:6px">> 2h sin atención o >48h sin propuesta</div>
-        <div style="overflow:auto">
-          <table>
-            <thead><tr><th>Folio</th><th>Creada</th><th>1ª Atención</th><th>Propuesta</th><th>Brechas</th></tr></thead>
-            <tbody id="tblSLA"><tr><td colspan="5">Cargando…</td></tr></tbody>
-          </table>
+      <!-- DESTINOS -->
+      <section id="destinos" class="section" style="display:none">
+        <h2>Destinos</h2>
+        <div class="grid">
+          <div class="card col-6">
+            <h3>Nuevo / Editar</h3>
+            <form id="formDest">
+              <input type="hidden" name="id">
+              <label>Nombre</label><input name="name" required>
+              <label>País</label><input name="country">
+              <label>Región</label><input name="region">
+              <label>Orden</label><input name="sort_order" type="number" value="100">
+              <label>Activo</label>
+              <select name="is_active"><option value="true">Sí</option><option value="false">No</option></select>
+              <button class="btn" type="submit">Guardar</button>
+              <span id="msgDest" class="muted"></span>
+            </form>
+          </div>
+          <div class="card col-6">
+            <h3>Listado</h3>
+            <table>
+              <thead><tr><th>Nombre</th><th>País</th><th>Región</th><th>Orden</th><th>Activo</th><th></th></tr></thead>
+              <tbody id="tblDestinos"><tr><td colspan="6">Cargando…</td></tr></tbody>
+            </table>
+          </div>
         </div>
-      </div>
-    </section>
-  </main>
+      </section>
+
+      <!-- PROVEEDORES -->
+      <section id="proveedores" class="section" style="display:none">
+        <h2>Proveedores</h2>
+        <div class="grid">
+          <div class="card col-6">
+            <h3>Nuevo / Editar</h3>
+            <form id="formProv">
+              <input type="hidden" name="id">
+              <label>Nombre</label><input name="name" required>
+              <label>Tipo</label>
+              <select name="type" required>
+                <option value="hotel">hotel</option>
+                <option value="residence">residence</option>
+                <option value="tour_operator">tour_operator</option>
+                <option value="restaurant">restaurant</option>
+                <option value="chef">chef</option>
+                <option value="assistant">assistant</option>
+                <option value="translator">translator</option>
+                <option value="security">security</option>
+                <option value="transport">transport</option>
+              </select>
+              <label>Email</label><input name="email" type="email">
+              <label>Teléfono</label><input name="phone">
+              <label>Rating (0–5)</label><input name="rating" type="number" step="0.1" min="0" max="5">
+              <label>Activo</label>
+              <select name="is_active"><option value="true">Sí</option><option value="false">No</option></select>
+              <button class="btn" type="submit">Guardar</button>
+              <span id="msgProv" class="muted"></span>
+            </form>
+          </div>
+          <div class="card col-6">
+            <h3>Listado</h3>
+            <table>
+              <thead><tr><th>Nombre</th><th>Tipo</th><th>Email</th><th>Teléfono</th><th>Rating</th><th>Activo</th><th></th></tr></thead>
+              <tbody id="tblProveedores"><tr><td colspan="7">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SERVICIOS -->
+      <section id="servicios" class="section" style="display:none">
+        <h2>Servicios</h2>
+        <div class="grid">
+          <div class="card col-6">
+            <h3>Nuevo / Editar</h3>
+            <form id="formServ">
+              <input type="hidden" name="id">
+              <label>Tipo</label>
+              <select name="service_kind" required>
+                <option value="lodging">lodging</option>
+                <option value="tour">tour</option>
+                <option value="dining">dining</option>
+                <option value="vip">vip</option>
+              </select>
+              <label>Nombre</label><input name="name" required>
+              <label>Descripción</label><textarea name="description" rows="3"></textarea>
+              <label>Precio base (USD)</label><input name="base_price_usd" type="number" step="0.01" min="0">
+              <label>Destino (UUID)</label><input name="destination_id">
+              <label>Proveedor (UUID)</label><input name="provider_id">
+              <label>Activo</label>
+              <select name="is_active"><option value="true">Sí</option><option value="false">No</option></select>
+              <button class="btn" type="submit">Guardar</button>
+              <span id="msgServ" class="muted"></span>
+            </form>
+          </div>
+          <div class="card col-6">
+            <h3>Listado</h3>
+            <table>
+              <thead><tr><th>Tipo</th><th>Nombre</th><th>Destino</th><th>Proveedor</th><th>Precio</th><th>Activo</th></tr></thead>
+              <tbody id="tblServicios"><tr><td colspan="6">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SOLICITUDES -->
+      <section id="solicitudes" class="section" style="display:none">
+        <h2>Solicitudes</h2>
+        <div class="card">
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+            <label class="muted">Filtrar estado</label>
+            <select id="fltStatus">
+              <option value="">(todos)</option>
+              <option>new</option><option>curation</option><option>proposal_sent</option>
+              <option>confirmed</option><option>closed</option><option>discarded</option>
+            </select>
+            <button class="btn" id="btnLoadReq">Cargar</button>
+          </div>
+          <div style="overflow:auto">
+            <table>
+              <thead><tr><th>Folio</th><th>Cliente</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Cambiar a</th><th></th></tr></thead>
+              <tbody id="tblReq"><tr><td colspan="7">Cargando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="/js/auth-guard.js"></script>
   <script>
     const token = localStorage.getItem('token')||'';
     const $ = (s,el=document)=>el.querySelector(s);
 
-    function pill(text, cls=''){ const span=document.createElement('span'); span.textContent=text; span.style.cssText='padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);'; if(cls==='ok')span.style.color='#19c37d'; if(cls==='warn')span.style.color='#f5a524'; if(cls==='err')span.style.color='#ef4444'; return span; }
+    // Navegación secciones
+    const sections = Array.from(document.querySelectorAll('.section'));
+    document.querySelectorAll('.nav a').forEach(a=>{
+      a.onclick = (e)=>{ e.preventDefault();
+        document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));
+        a.classList.add('active');
+        const id = a.getAttribute('href').slice(1);
+        sections.forEach(s=>s.style.display = (s.id===id?'block':'none'));
+      };
+    });
 
-    const STATUS_CLS = { new:'', curation:'warn', proposal_sent:'ok', confirmed:'ok', closed:'', discarded:'err' };
-
-    async function loadAdmin(){
-      try{
-        const res = await fetch('/.netlify/functions/admin-dashboard', { headers:{ Authorization:'Bearer '+token } });
-        const data = await res.json();
-        if(!data.ok) throw new Error(data.error||'Error');
-
-        // Total
-        $('#kpiTotal').textContent = data.total;
-
-        // Por estado
-        const chips = $('#chips'); chips.innerHTML='';
-        data.por_estado.forEach(r=>{
-          const c = STATUS_CLS[r.status]||'';
-          const el = pill(`${r.status}: ${r.total}`, c);
-          chips.appendChild(el);
-        });
-
-        // Recientes
-        const tbR = $('#tblRecent'); tbR.innerHTML='';
-        if(!data.recientes.length){
-          tbR.innerHTML='<tr><td colspan="6">Sin registros</td></tr>';
-        }else{
-          data.recientes.forEach(r=>{
-            const cls = STATUS_CLS[r.estado]||'';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${r.id}</td>
-              <td>${r.cliente}</td>
-              <td>${r.servicio}</td>
-              <td>${r.destino}</td>
-              <td><span class="${cls}">${r.estado}</span></td>
-              <td>${r.creada}</td>
-            `;
-            tbR.appendChild(tr);
-          });
-        }
-
-        // SLA
-        const tbS = $('#tblSLA'); tbS.innerHTML='';
-        if(!data.sla.length){
-          tbS.innerHTML='<tr><td colspan="5">Sin brechas</td></tr>';
-        }else{
-          data.sla.forEach(r=>{
-            const tags=[];
-            if(r.breach_first_attention_2h) tags.push('>2h atenc.');
-            if(r.breach_proposal_48h) tags.push('>48h propuesta');
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${r.id}</td>
-              <td>${r.created_at?.slice(0,19).replace('T',' ')||'—'}</td>
-              <td>${r.first_change_at?.slice(0,19).replace('T',' ')||'—'}</td>
-              <td>${r.proposal_at?.slice(0,19).replace('T',' ')||'—'}</td>
-              <td>${tags.join(' | ') || '—'}</td>
-            `;
-            tbS.appendChild(tr);
-          });
-        }
-
-      }catch(e){
-        console.error(e);
-        alert('No se pudo cargar el dashboard admin');
-      }
-    }
-
-    document.getElementById('btnRefresh').onclick = loadAdmin;
     document.getElementById('btnLogout').onclick = ()=>{ localStorage.clear(); location.replace('/login.html'); };
 
-    loadAdmin();
+    // Helpers fetch
+    const fget =(url)=> fetch(url,{headers:{Authorization:'Bearer '+token}}).then(r=>r.json());
+    const fpost=(url,body)=> fetch(url,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)}).then(r=>r.json());
+
+    // DASHBOARD (reusa tus funciones admin-dashboard ya creadas)
+    async function loadDash() {
+      try{
+        const data = await fget('/.netlify/functions/admin-dashboard');
+        if(!data.ok) throw new Error(data.error||'Error');
+        $('#kpiTotal').textContent = data.total;
+
+        const chips = $('#chips'); chips.innerHTML='';
+        const palette = { new:'', curation:'warn', proposal_sent:'ok', confirmed:'ok', closed:'', discarded:'err' };
+        data.por_estado.forEach(r=>{
+          const span=document.createElement('span');
+          span.textContent=`${r.status}: ${r.total}`;
+          span.style.cssText='padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px';
+          if(palette[r.status]==='ok') span.style.color='#19c37d';
+          if(palette[r.status]==='warn') span.style.color='#f5a524';
+          if(palette[r.status]==='err') span.style.color='#ef4444';
+          chips.appendChild(span);
+        });
+
+        const tbR = $('#tblRecent'); tbR.innerHTML='';
+        data.recientes.forEach(r=>{
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${r.id}</td><td>${r.cliente}</td><td>${r.servicio}</td><td>${r.destino}</td><td>${r.estado}</td><td>${r.creada}</td>`;
+          tbR.appendChild(tr);
+        });
+
+        const tbS = $('#tblSLA'); tbS.innerHTML='';
+        data.sla.forEach(r=>{
+          const tags=[];
+          if(r.breach_first_attention_2h) tags.push('>2h atenc.');
+          if(r.breach_proposal_48h) tags.push('>48h propuesta');
+          const tr=document.createElement('tr');
+          tr.innerHTML=`<td>${r.id}</td><td>${(r.created_at||'').replace('T',' ').slice(0,19)}</td><td>${(r.first_change_at||'').replace('T',' ').slice(0,19)}</td><td>${(r.proposal_at||'').replace('T',' ').slice(0,19)}</td><td>${tags.join(' | ')||'—'}</td>`;
+          tbS.appendChild(tr);
+        });
+
+      }catch(e){ console.error(e); alert('No se pudo cargar el dashboard'); }
+    }
+    $('#btnRefresh').onclick = loadDash;
+
+    // DESTINOS
+    async function loadDestinos(){
+      const d = await fget('/.netlify/functions/admin-destinations-list');
+      const tb = $('#tblDestinos'); tb.innerHTML='';
+      (d.items||[]).forEach(it=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${it.name}</td><td>${it.country||'—'}</td><td>${it.region||'—'}</td><td>${it.sort_order}</td><td>${it.is_active?'Sí':'No'}</td>
+        <td><button class="btn" data-id="${it.id}" data-type="editDest">Editar</button></td>`;
+        tb.appendChild(tr);
+      });
+    }
+    $('#formDest').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target).entries());
+      body.sort_order = +body.sort_order;
+      body.is_active = body.is_active === 'true';
+      const r = await fpost('/.netlify/functions/admin-destinations-upsert', body);
+      $('#msgDest').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+      if (r.ok) { e.target.reset(); loadDestinos(); }
+    });
+
+    // PROVEEDORES
+    async function loadProveedores(){
+      const d = await fget('/.netlify/functions/admin-providers-list');
+      const tb = $('#tblProveedores'); tb.innerHTML='';
+      (d.items||[]).forEach(it=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${it.name}</td><td>${it.type}</td><td>${it.email||'—'}</td><td>${it.phone||'—'}</td><td>${it.rating??'—'}</td><td>${it.is_active?'Sí':'No'}</td>
+        <td><button class="btn" data-id="${it.id}" data-type="editProv">Editar</button></td>`;
+        tb.appendChild(tr);
+      });
+    }
+    $('#formProv').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target).entries());
+      body.rating = body.rating===''?null:+body.rating;
+      body.is_active = body.is_active === 'true';
+      const r = await fpost('/.netlify/functions/admin-providers-upsert', body);
+      $('#msgProv').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+      if (r.ok) { e.target.reset(); loadProveedores(); }
+    });
+
+    // SERVICIOS
+    async function loadServicios(){
+      const d = await fget('/.netlify/functions/admin-services-list');
+      const tb = $('#tblServicios'); tb.innerHTML='';
+      (d.items||[]).forEach(it=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${it.kind}</td><td>${it.name}</td><td>${it.destination||'—'}</td><td>${it.provider||'—'}</td><td>${it.base_price_usd??'—'}</td><td>${it.is_active?'Sí':'No'}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+    $('#formServ').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target).entries());
+      body.base_price_usd = body.base_price_usd===''?null:+body.base_price_usd;
+      body.is_active = body.is_active === 'true';
+      const r = await fpost('/.netlify/functions/admin-services-upsert', body);
+      $('#msgServ').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+      if (r.ok) { e.target.reset(); loadServicios(); }
+    });
+
+    // SOLICITUDES
+    async function loadRequests(){
+      const st = $('#fltStatus').value;
+      const url = '/.netlify/functions/admin-requests-list' + (st?`?status=${encodeURIComponent(st)}`:'');
+      const d = await fget(url);
+      const tb = $('#tblReq'); tb.innerHTML='';
+      (d.items||[]).forEach(it=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `
+          <td>${it.id}</td><td>${it.cliente}</td><td>${it.servicio}</td><td>${it.destino}</td>
+          <td>${it.estado}</td>
+          <td>
+            <select data-id="${it.id}" class="selNext">
+              <option value="">(selecciona)</option>
+              <option>new</option><option>curation</option><option>proposal_sent</option>
+              <option>confirmed</option><option>closed</option><option>discarded</option>
+            </select>
+          </td>
+          <td><button class="btn btnGo" data-id="${it.id}">Cambiar</button></td>
+        `;
+        tb.appendChild(tr);
+      });
+      tb.querySelectorAll('.btnGo').forEach(btn=>{
+        btn.onclick = async ()=>{
+          const id = btn.getAttribute('data-id');
+          const sel = tb.querySelector(`.selNext[data-id="${id}"]`);
+          const to_status = sel.value;
+          if(!to_status){ alert('Selecciona un estado'); return; }
+          const r = await fpost('/.netlify/functions/admin-requests-status', { id, to_status });
+          if(!r.ok) return alert(r.error||'Error');
+          alert('Estado actualizado');
+          loadRequests();
+        };
+      });
+    }
+    document.getElementById('btnLoadReq').onclick = loadRequests;
+
+    // Cargas iniciales
+    window.addEventListener('hashchange', ()=>{
+      const id = (location.hash||'#dash').slice(1);
+      document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active', a.getAttribute('href')===('#'+id)));
+      sections.forEach(s=>s.style.display = (s.id===id?'block':'none'));
+      if (id==='dash') loadDash();
+      if (id==='destinos') loadDestinos();
+      if (id==='proveedores') loadProveedores();
+      if (id==='servicios') loadServicios();
+      if (id==='solicitudes') loadRequests();
+    });
+    document.getElementById('fltStatus').value = '';
+    document.getElementById('btnRefresh').onclick = loadDash;
+
+    // Arranque
+    if(!location.hash) location.hash = '#dash';
+    window.dispatchEvent(new Event('hashchange'));
   </script>
 </body>
 </html>
