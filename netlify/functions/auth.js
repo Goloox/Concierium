@@ -1,3 +1,4 @@
+// netlify/functions/_auth.js
 import jwt from "jsonwebtoken";
 import { db } from "./_db.js";
 
@@ -13,6 +14,7 @@ function readToken(event) {
 export async function requireAdmin(event) {
   const token = readToken(event);
   if (!token) return { ok: false, statusCode: 401, error: "Unauthorized (no token)" };
+
   let claims;
   try {
     claims = jwt.verify(token, process.env.JWT_SECRET);
