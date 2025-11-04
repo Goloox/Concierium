@@ -2,9 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Concierium | CLIENTE</title>
-  <!-- Base hace que href="#..." y rutas relativas cuelguen de /client/ -->
-  <base href="/client/">
+  <title>Concierium | CLIENTE (SPA)</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
     :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
@@ -14,7 +12,7 @@
                  radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
       display:grid;grid-template-rows:auto 1fr}
     header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}
+    .brand{display:flex;align-items:center;gap:10px}.brand b{letter-spacing:.4px}
     .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
     .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
     aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
@@ -30,24 +28,24 @@
     table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
     tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
     .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
+    .errorbox{margin-top:8px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#2a1720;color:#ffb4c0}
     #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <img src="/client/img/logo.png" alt=""/>
-      <b>Concierium — CLIENTE</b>
-      <span style="margin-left:8px;color:#9aa3b2">Área del usuario</span>
+      <b>Concierium — CLIENTE (SPA)</b>
+      <span id="who" style="margin-left:8px;color:#9aa3b2"></span>
     </div>
     <div style="margin-left:auto;display:flex;gap:10px">
-      <button class="btn" id="btnLogout">Salir</button>
+      <button class="btn" id="btnLogout" style="display:none">Salir</button>
     </div>
   </header>
 
   <div class="wrap">
     <aside>
-      <nav class="nav">
+      <nav class="nav" id="leftNav" style="display:none">
         <a href="#home" class="active">Home</a>
         <a href="#nueva">Nueva solicitud</a>
         <a href="#mis-solicitudes">Mis solicitudes</a>
@@ -55,9 +53,28 @@
     </aside>
 
     <main>
+      <!-- LOGIN -->
+      <section id="login" class="section">
+        <h2>Iniciar sesión</h2>
+        <div id="loginErr" class="errorbox" style="display:none"></div>
+        <div class="card col-6" style="max-width:560px">
+          <form id="formLogin">
+            <label>Email</label>
+            <input name="email" type="email" required placeholder="tu@correo.com"/>
+            <label>Contraseña</label>
+            <input name="password" type="password" required placeholder="••••••••"/>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+              <button class="btn" type="submit">Entrar</button>
+              <span class="muted">Acceso al área de cliente</span>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <!-- HOME -->
-      <section id="home" class="section">
+      <section id="home" class="section" style="display:none">
         <h2>Resumen</h2>
+        <div id="homeErr" class="errorbox" style="display:none"></div>
         <div class="grid">
           <div class="card col-12">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
@@ -83,6 +100,7 @@
       <!-- NUEVA -->
       <section id="nueva" class="section" style="display:none">
         <h2>Nueva solicitud</h2>
+        <div id="newErr" class="errorbox" style="display:none"></div>
         <div class="grid">
           <div class="card col-8">
             <form id="formNewReq">
@@ -154,6 +172,7 @@
       <!-- MIS SOLICITUDES -->
       <section id="mis-solicitudes" class="section" style="display:none">
         <h2>Mis solicitudes</h2>
+        <div id="listErr" class="errorbox" style="display:none"></div>
         <div class="card" style="margin-bottom:12px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <label class="muted">Filtrar estado</label>
@@ -180,6 +199,7 @@
       <!-- EDIT -->
       <section id="solicitud-edit" class="section" style="display:none">
         <h2>Editar solicitud</h2>
+        <div id="editErr" class="errorbox" style="display:none"></div>
         <div class="card" style="margin-bottom:12px;display:flex;gap:10px">
           <a class="btn" href="#mis-solicitudes">← Volver a Mis solicitudes</a>
           <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
@@ -273,216 +293,97 @@
 
   <div id="toast"></div>
 
-  <!-- TODO EN UN SOLO SCRIPT -->
-  <script type="module">
-    ////////////////////////////////////////////////////////////////////////////
-    // Auth-guard mínimo embebido
-    ////////////////////////////////////////////////////////////////////////////
-    const token = localStorage.getItem('token') || '';
-    if(!token){
-      // si no hay token, manda a login del cliente
-      location.replace('/client/login.html');
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Helpers base
-    ////////////////////////////////////////////////////////////////////////////
+  <script>
+    // ===== Helpers básicos
     const $  = (s, el=document) => el.querySelector(s);
     const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
-
-    function toast(msg, ms=2200){
-      const t = $('#toast');
-      if(!t) return alert(msg);
-      t.textContent = msg;
-      t.style.display = 'block';
-      setTimeout(()=>{ t.style.display='none'; }, ms);
-    }
-
-    const authHeaders = () => token ? { Authorization: 'Bearer ' + token } : {};
-
-    const fget = (url) =>
-      fetch(url, { headers: authHeaders() })
-        .then(r => r.json())
-        .catch(e => ({ ok:false, error:String(e) }));
-
-    const fpost = (url, body) =>
-      fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
-        body: JSON.stringify(body)
-      }).then(r => r.json())
-       .catch(e => ({ ok:false, error:String(e) }));
-
-    const fupload = (url, formData) =>
-      fetch(url, { method: 'POST', headers: authHeaders(), body: formData })
-        .then(r => r.json())
-        .catch(e => ({ ok:false, error:String(e) }));
-
-    const apiGet  = (op, qs={}) => {
-      const qp = new URLSearchParams({ op, ...qs }).toString();
-      return fget('/.netlify/functions/api?' + qp);
-    };
-    const apiPost = (op, body) => {
-      const qp = new URLSearchParams({ op }).toString();
-      return fpost('/.netlify/functions/api?' + qp, body);
+    const toast = (m, t=2200)=>{ const x=$('#toast'); x.textContent=m; x.style.display='block'; setTimeout(()=>x.style.display='none', t); };
+    const fmtDate = s => { if(!s) return '—'; const d=new Date(s); return isNaN(d)? String(s) : d.toISOString().replace('T',' ').slice(0,16); };
+    const splitInterests = s => Array.isArray(s)? s : String(s||'').split(',').map(x=>x.trim()).filter(Boolean);
+    const fillSelect = (el, rows, {value='id', label='name', withEmpty=true, emptyText='— selecciona —'}={})=>{
+      if(!el) return; el.innerHTML=''; if(withEmpty){ const o=document.createElement('option'); o.value=''; o.textContent=emptyText; el.appendChild(o); }
+      rows.forEach(r=>{ const o=document.createElement('option'); o.value=r[value]??''; o.textContent=r[label]??r[value]??''; el.appendChild(o); });
     };
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Estado en memoria
-    ////////////////////////////////////////////////////////////////////////////
-    const state = {
-      destinations: [],     // [{id,name,...}]
-      services: [],         // [{id, service_kind, name, destination, provider, ...}]
-      myRequests: [],       // [{...}]
-      editCurrent: null,    // request en edición
-    };
+    // ===== Auth + API
+    const getToken   = ()=> localStorage.getItem('token') || '';
+    const setToken   = (t)=> localStorage.setItem('token', t||'');
+    const clearToken = ()=> localStorage.removeItem('token');
+    const authHeaders = ()=> { const t=getToken(); return t? { Authorization:'Bearer '+t } : {}; };
+    const apiGet  = (op, qs={}) => fetch('/.netlify/functions/api?' + new URLSearchParams({op, ...qs}), { headers: authHeaders() }).then(r=>r.json());
+    const apiPost = (op, body)   => fetch('/.netlify/functions/api?' + new URLSearchParams({op}), { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body: JSON.stringify(body||{}) }).then(r=>r.json());
+    const loginPost = (email, password)=> fetch('/.netlify/functions/auth-login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email,password}) }).then(r=>r.json());
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Utilidades UI
-    ////////////////////////////////////////////////////////////////////////////
-    function setActiveNav(hash){
-      $$('.nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === hash));
-    }
-    function showSection(id){
-      $$('.section').forEach(sec => sec.style.display = (sec.id === id ? 'block' : 'none'));
-    }
+    // ===== Estado
+    const state = { me:null, destinations:[], services:[], myRequests:[], editCurrent:null };
 
-    function fillSelect(selectEl, rows, {value='id', label='name', withEmpty=true, emptyText='— selecciona —'}={}){
-      if(!selectEl) return;
-      selectEl.innerHTML = '';
-      if (withEmpty) {
-        const op = document.createElement('option');
-        op.value = ''; op.textContent = emptyText;
-        selectEl.appendChild(op);
-      }
-      for (const r of rows){
-        const op = document.createElement('option');
-        op.value = r[value] ?? '';
-        op.textContent = r[label] ?? r[value] ?? '';
-        selectEl.appendChild(op);
-      }
+    // ===== UI: mostrar/ocultar secciones sin redirigir páginas
+    function showOnly(id){
+      $$('.section').forEach(s => s.style.display = (s.id===id ? 'block' : 'none'));
+      // Sidebar visible solo si NO estamos en login
+      $('#leftNav').style.display = (id==='login') ? 'none' : 'grid';
+      $('#btnLogout').style.display = (id==='login') ? 'none' : 'inline-flex';
+      // Nav activo
+      $$('#leftNav a').forEach(a=> a.classList.toggle('active', a.getAttribute('href')==='#'+id));
     }
 
-    function fmtDate(s){
-      if(!s) return '—';
-      const d = new Date(s);
-      if (Number.isNaN(d.getTime())) return String(s);
-      return d.toISOString().replace('T',' ').slice(0,16);
-    }
-
-    function splitInterests(s){
-      if (!s) return [];
-      if (Array.isArray(s)) return s;
-      return String(s).split(',').map(x=>x.trim()).filter(Boolean);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Prefetch referencias (destinos/servicios)
-    ////////////////////////////////////////////////////////////////////////////
+    // ===== Prefetch
     async function prefetchRefs(){
-      const [dests, servs] = await Promise.all([
-        apiGet('public-destinations'),
-        apiGet('public-services'),
-      ]);
-
-      if(!dests.ok){
-        console.error(dests.error);
-        toast('No se pudieron cargar destinos');
-        state.destinations = [];
-      } else {
-        state.destinations = dests.items || [];
-      }
-
-      if(!servs.ok){
-        console.error(servs.error);
-        toast('No se pudieron cargar servicios');
-        state.services = [];
-      } else {
-        state.services = servs.items || [];
-      }
-
-      // Selects "Nueva"
+      const [dests, servs] = await Promise.allSettled([apiGet('public-destinations'), apiGet('public-services')]);
+      state.destinations = dests.value?.ok ? (dests.value.items||[]) : [];
+      state.services     = servs.value?.ok ? (servs.value.items||[]) : [];
+      // rellenar "Nueva"
       fillSelect($('#selDestinationNew'), state.destinations);
       refreshServiceSelectFor('#selServiceNew', $('#selKindNew')?.value || '');
     }
-
-    function refreshServiceSelectFor(selectCss, kindFilter=''){
-      const el = $(selectCss);
-      if(!el) return;
-      const items = state.services
-        .filter(s => !kindFilter || s.service_kind === kindFilter);
-      const rows = items.map(s => ({ id: s.id, name: `${s.name} ${s.destination ? '· '+s.destination : ''}` }));
+    function refreshServiceSelectFor(selectCss, kind=''){
+      const el = $(selectCss); if(!el) return;
+      const items = state.services.filter(s => !kind || s.service_kind===kind);
+      const rows = items.map(s => ({ id: s.id, name: `${s.name}${s.destination? ' · '+s.destination:''}` }));
       fillSelect(el, rows, { withEmpty:true, emptyText:'— (opcional) —' });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // HOME — KPIs y recientes
-    ////////////////////////////////////////////////////////////////////////////
+    // ===== HOME
     async function loadHome(){
-      const resp = await apiGet('client-requests-list');
-      if(!resp.ok){
-        console.error(resp.error);
-        const msg = String(resp.error||'Error');
-        if (/no existe la tabla .*requests/i.test(msg)) {
-          toast('La tabla requests no existe. Corre el esquema SQL.');
-        } else {
-          toast('No se pudieron cargar tus solicitudes');
-        }
-        $('#kpiMine').textContent = '—';
+      $('#homeErr').style.display='none';
+      const r = await apiGet('client-requests-list');
+      if(!r.ok){
+        $('#homeErr').textContent = r.error || 'Error';
+        $('#homeErr').style.display='block';
         $('#tblMyRecent').innerHTML = '<tr><td colspan="6">Error</td></tr>';
-        $('#chipsMine').innerHTML = '';
         return;
       }
-      const items = resp.items || [];
+      const items = r.items||[];
       state.myRequests = items;
-
-      // KPIs por estado
-      const byStatus = items.reduce((acc, r)=>{
-        const k = r.current_status || 'new';
-        acc[k] = (acc[k]||0) + 1;
-        return acc;
-      }, {});
-      const total = items.length;
-      $('#kpiMine').textContent = String(total);
-      const chips = $('#chipsMine'); chips.innerHTML = '';
-      for (const [st, n] of Object.entries(byStatus)){
-        const span = document.createElement('span');
-        span.className = 'chip';
-        span.textContent = `${st}: ${n}`;
-        chips.appendChild(span);
-      }
-
-      // Recientes (top 10)
-      const tb = $('#tblMyRecent'); tb.innerHTML = '';
-      items.slice(0,10).forEach(r=>{
+      $('#kpiMine').textContent = String(items.length);
+      const counts = items.reduce((a,x)=> (a[x.current_status||'new']=(a[x.current_status||'new']||0)+1,a),{});
+      const chips = $('#chipsMine'); chips.innerHTML='';
+      Object.entries(counts).forEach(([k,v])=>{ const s=document.createElement('span'); s.className='chip'; s.textContent=`${k}: ${v}`; chips.appendChild(s); });
+      const tb = $('#tblMyRecent'); tb.innerHTML='';
+      items.slice(0,10).forEach(it=>{
         const tr = document.createElement('tr');
-        const fecha = r.start_date || r.created_at || '';
         tr.innerHTML = `
-          <td>${r.id}</td>
-          <td>${r.servicio || r.servicio_kind || r.service_kind || '—'}</td>
-          <td>${r.destino || '—'}</td>
-          <td>${r.current_status || 'new'}</td>
-          <td>${fmtDate(fecha)}</td>
-          <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(r.id)}">Editar</a></td>
+          <td>${it.id}</td>
+          <td>${it.servicio || it.servicio_kind || it.service_kind || '—'}</td>
+          <td>${it.destino || '—'}</td>
+          <td>${it.current_status || 'new'}</td>
+          <td>${fmtDate(it.created_at || it.start_date)}</td>
+          <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}">Editar</a></td>
         `;
         tb.appendChild(tr);
       });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // NUEVA — crear solicitud
-    ////////////////////////////////////////////////////////////////////////////
+    // ===== NUEVA
     function bindNueva(){
-      const selKind = $('#selKindNew');
-      selKind?.addEventListener('change', ()=>{
-        refreshServiceSelectFor('#selServiceNew', selKind.value);
+      $('#selKindNew')?.addEventListener('change', e=>{
+        refreshServiceSelectFor('#selServiceNew', e.target.value);
       });
-
       $('#formNewReq')?.addEventListener('submit', async (e)=>{
         e.preventDefault();
+        $('#newErr').style.display='none';
         const f = e.target;
         const data = Object.fromEntries(new FormData(f).entries());
-
         const payload = {
           service_kind: data.service_kind || '',
           destination_id: data.destination_id || null,
@@ -495,107 +396,89 @@
           interests: splitInterests(data.interests),
           notes: data.notes || null,
         };
-
         const r = await apiPost('client-requests-upsert', payload);
-        const msgEl = $('#msgNewReq');
-        msgEl.textContent = r.ok ? 'Enviado' : (r.error || 'Error');
-        if(r.ok){
-          f.reset();
-          await Promise.all([loadHome(), loadMisSolicitudes()]);
-          location.hash = '#mis-solicitudes';
-          toast('Solicitud creada');
-        }else{
-          toast(msgEl.textContent);
+        if(!r.ok){
+          $('#newErr').textContent = r.error || 'Error al crear';
+          $('#newErr').style.display='block';
+          toast(r.error||'Error');
+          return;
         }
+        toast('Solicitud creada');
+        f.reset();
+        await Promise.all([loadHome(), loadMisSolicitudes()]);
+        location.hash='#mis-solicitudes'; // sigue siendo MISMA PÁGINA, solo cambia sección
       });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // MIS SOLICITUDES — listar/filtrar
-    ////////////////////////////////////////////////////////////////////////////
+    // ===== LISTAR
     async function loadMisSolicitudes(){
+      $('#listErr').style.display='none';
       const st = $('#fltStatusMyReq')?.value || '';
-      const d = await apiGet('client-requests-list', st ? { status: st } : {});
+      const r = await apiGet('client-requests-list', st?{status:st}:{});
       const tb = $('#tblMyReq');
-      if(!tb) return;
-
-      if(!d.ok){
-        console.error(d.error);
-        tb.innerHTML = `<tr><td colspan="6">${d.error||'Error'}</td></tr>`;
+      if(!r.ok){
+        $('#listErr').textContent = r.error || 'Error';
+        $('#listErr').style.display='block';
+        tb.innerHTML = `<tr><td colspan="6">${r.error||'Error'}</td></tr>`;
         return;
       }
-
-      const items = d.items || [];
+      const items = r.items || [];
       state.myRequests = items;
-
-      if(items.length === 0){
-        tb.innerHTML = '<tr><td colspan="6">Sin resultados</td></tr>';
-        return;
-      }
-
+      if(items.length===0){ tb.innerHTML = '<tr><td colspan="6">Sin resultados</td></tr>'; return; }
       tb.innerHTML = '';
-      for(const it of items){
-        const fecha = it.start_date || it.created_at || '';
+      items.forEach(it=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${it.id}</td>
           <td>${it.servicio || it.servicio_kind || it.service_kind || '—'}</td>
           <td>${it.destino || '—'}</td>
-          <td>${fmtDate(fecha)}</td>
+          <td>${fmtDate(it.created_at || it.start_date)}</td>
           <td>${it.current_status || 'new'}</td>
           <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}">Editar</a></td>
         `;
         tb.appendChild(tr);
-      }
+      });
     }
-
     function bindMisSolicitudes(){
       $('#btnLoadMyReq')?.addEventListener('click', loadMisSolicitudes);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // EDITAR — cargar, pintar, guardar, cancelar, adjuntos
-    ////////////////////////////////////////////////////////////////////////////
-    function findReqInState(id){
-      return state.myRequests.find(r => r.id === id) || null;
-    }
-
-    function previewEdit(data, box){
+    // ===== EDIT
+    const previewEdit = (data, box)=>{
       if(!box) return;
       const lines = [];
-      const mapKind = (v)=> v || data.servicio_kind || data.service_kind || '—';
-      lines.push(`Servicio: ${mapKind(data.service_kind)}`);
+      const kind = data.service_kind || '—';
+      lines.push(`Servicio: ${kind}`);
       lines.push(`Destino: ${data.destination_id || '—'}`);
       lines.push(`Catálogo: ${data.catalog_id || '—'}`);
       lines.push(`Desde: ${data.start_date || '—'}  Hasta: ${data.end_date || '—'}`);
       lines.push(`Huéspedes: ${data.guests ?? '—'}  Presupuesto: ${data.budget_usd ?? '—'}`);
       lines.push(`Alimentación: ${data.dietary_notes || '—'}`);
-      lines.push(`Intereses: ${(Array.isArray(data.interests)?data.interests:splitInterests(data.interests)).join(', ') || '—'}`);
+      lines.push(`Intereses: ${splitInterests(data.interests).join(', ') || '—'}`);
       lines.push(`Notas: ${data.notes || '—'}`);
       box.textContent = lines.join('\n');
-    }
-
+    };
     function fillEditSelects(){
       fillSelect($('#selDestinationEdit'), state.destinations, { withEmpty:true, emptyText:'— sin destino —' });
-      refreshServiceSelectFor('#selServiceEdit', $('[name="service_kind"]', $('#formReqEdit'))?.value || '');
+      const kind = $('#formReqEdit [name="service_kind"]')?.value || '';
+      const items = state.services.filter(s => !kind || s.service_kind===kind);
+      const rows = items.map(s => ({ id:s.id, name:`${s.name}${s.destination? ' · '+s.destination:''}` }));
+      fillSelect($('#selServiceEdit'), rows, { withEmpty:true, emptyText:'— (opcional) —' });
     }
-
     function bindEditForm(){
       const form = $('#formReqEdit'); if(!form) return;
-
-      $('[name="service_kind"]', form)?.addEventListener('change', (e)=>{
-        refreshServiceSelectFor('#selServiceEdit', e.target.value);
+      form.addEventListener('change', e=>{
+        if (e.target.name==='service_kind') fillEditSelects();
       });
-
       form.addEventListener('input', ()=>{
         const data = Object.fromEntries(new FormData(form).entries());
         data.interests = splitInterests(data.interests);
         previewEdit(data, $('#reqPreview'));
       });
-
       form.addEventListener('submit', async (e)=>{
         e.preventDefault();
-        const data = Object.fromEntries(new FormData(form).entries());
+        $('#editErr').style.display='none';
+        const data = Object.fromEntries(new FormData(e.target).entries());
         const payload = {
           id: data.id,
           service_kind: data.service_kind,
@@ -610,103 +493,68 @@
           notes: data.notes || null,
         };
         const r = await apiPost('client-requests-upsert', payload);
-        $('#msgReqEdit').textContent = r.ok ? 'Guardado' : (r.error||'Error');
-        toast($('#msgReqEdit').textContent);
-        if(r.ok){
-          await loadMisSolicitudes();
+        if(!r.ok){
+          $('#editErr').textContent = r.error || 'Error guardando';
+          $('#editErr').style.display='block';
+          toast(r.error||'Error');
+          return;
         }
+        toast('Guardado');
+        await loadMisSolicitudes();
       });
-
-      // Cancelar (a 'discarded')
       $('#btnCancelReq')?.addEventListener('click', async ()=>{
+        $('#editErr').style.display='none';
         const id = form.elements.id?.value;
         if(!id) return toast('Sin id');
         const r = await apiPost('client-requests-status', { id, to_status:'discarded' });
-        if(!r.ok){ toast(r.error||'Error'); return; }
+        if(!r.ok){
+          $('#editErr').textContent = r.error || 'Error al cancelar';
+          $('#editErr').style.display='block';
+          toast(r.error||'Error');
+          return;
+        }
         toast('Solicitud cancelada');
         await loadMisSolicitudes();
         location.hash = '#mis-solicitudes';
       });
     }
-
     async function loadAdjuntosList(requestId){
-      const ul = $('#attachmentsList');
-      if(!ul) return;
+      const ul = $('#attachmentsList'); if(!ul) return;
       const r = await apiGet('client-attachments-list', { request_id: requestId });
-      if(!r.ok){
-        ul.innerHTML = `<li class="muted">${r.error||'Error'}</li>`;
-        return;
-      }
-      const items = r.items || [];
-      if(items.length === 0){
-        ul.innerHTML = `<li class="muted">Sin adjuntos</li>`;
-        return;
-      }
+      if(!r.ok){ ul.innerHTML = `<li class="muted">${r.error||'Error'}</li>`; return; }
+      if((r.items||[]).length===0){ ul.innerHTML = `<li class="muted">Sin adjuntos</li>`; return; }
       ul.innerHTML = '';
-      for(const a of items){
+      for(const a of r.items){
         const li = document.createElement('li');
-        const linkText = a.file_name || a.storage_url || a.id;
-        const href = a.storage_url || '#';
+        const label = a.file_name || a.storage_url || a.id;
         li.innerHTML = `
           <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
             <div>
-              <div><b>${linkText}</b></div>
+              <div><b>${label}</b></div>
               <div class="muted">${a.mime_type} · ${(a.size_bytes??0)} bytes · ${fmtDate(a.created_at)}</div>
             </div>
-            ${href && href !== '#' ? `<a class="btn" href="${href}" target="_blank" rel="noopener">Ver</a>` : ''}
+            ${a.storage_url? `<a class="btn" href="${a.storage_url}" target="_blank" rel="noopener">Ver</a>`:''}
           </div>
         `;
         ul.appendChild(li);
       }
     }
-
-    function bindUpload(){
-      const f = $('#formUpload');
-      if(!f) return;
-      f.addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const rid = $('#uploadRequestId')?.value || f.elements.request_id?.value || '';
-        const file = f.elements.file?.files?.[0];
-        if(!rid){ toast('request_id requerido'); return; }
-        if(!file){ toast('Selecciona un archivo'); return; }
-        const fd = new FormData();
-        fd.append('request_id', rid);
-        fd.append('file', file);
-        // endpoint de subida (asegúrate de tener esta function)
-        const r = await fupload('/.netlify/functions/upload', fd);
-        $('#msgUpload').textContent = r.ok ? 'Subido' : (r.error||'Error al subir');
-        toast($('#msgUpload').textContent);
-        if(r.ok){
-          await loadAdjuntosList(rid);
-          f.reset();
-        }
-      });
-    }
-
     async function enterEditById(id){
-      let req = state.myRequests.find(r => r.id === id) || null;
+      let req = state.myRequests.find(r=>r.id===id);
       if(!req){
         const d = await apiGet('client-requests-list');
-        if(d.ok) state.myRequests = d.items || [];
-        req = state.myRequests.find(r => r.id === id) || null;
+        if(d.ok) state.myRequests = d.items||[];
+        req = state.myRequests.find(r=>r.id===id);
       }
-      if(!req){
-        toast('No se encontró la solicitud');
-        location.hash = '#mis-solicitudes';
-        return;
-      }
-      state.editCurrent = req;
+      if(!req){ toast('No se encontró la solicitud'); location.hash='#mis-solicitudes'; return; }
 
-      setActiveNav('#mis-solicitudes');
-      showSection('solicitud-edit');
-
+      showOnly('solicitud-edit');
       fillEditSelects();
 
-      const form = $('#formReqEdit');
-      form.reset();
+      const form = $('#formReqEdit'); form.reset();
       form.elements.id.value = req.id;
       form.elements.service_kind.value = (req.service_kind || req.servicio_kind || 'tour');
-      refreshServiceSelectFor('#selServiceEdit', form.elements.service_kind.value);
+      fillEditSelects();
       if (req.destination_id) form.elements.destination_id.value = req.destination_id;
       if (req.catalog_id)     form.elements.catalog_id.value     = req.catalog_id;
       if (req.start_date)     form.elements.start_date.value     = req.start_date;
@@ -733,73 +581,95 @@
 
       $('#uploadRequestId') && ($('#uploadRequestId').value = req.id);
       await loadAdjuntosList(req.id);
+      bindEditForm();
+      bindUpload();
+    }
+    function bindUpload(){
+      const f = $('#formUpload'); if(!f) return;
+      f.addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const rid = $('#uploadRequestId')?.value || f.elements.request_id?.value || '';
+        const file = f.elements.file?.files?.[0];
+        if(!rid) return toast('request_id requerido');
+        if(!file) return toast('Selecciona un archivo');
+        const fd = new FormData(); fd.append('request_id', rid); fd.append('file', file);
+        const r = await fetch('/.netlify/functions/upload', { method:'POST', headers: authHeaders(), body: fd }).then(x=>x.json());
+        if(!r.ok){ $('#msgUpload').textContent = r.error||'Error al subir'; toast(r.error||'Error'); return; }
+        $('#msgUpload').textContent = 'Subido';
+        await loadAdjuntosList(rid);
+        f.reset();
+      });
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Router simple por hash
-    ////////////////////////////////////////////////////////////////////////////
+    // ===== Router de secciones (mismo HTML)
     async function router(){
-      const h = location.hash || '#home';
-      try{
-        if (h.startsWith('#solicitudes/edit')){
-          const u = new URL(location.href);
-          const id = u.hash.split('?')[1] ? new URLSearchParams(u.hash.split('?')[1]).get('id') : null;
-          setActiveNav('#mis-solicitudes');
-          await prefetchRefs();
-          await enterEditById(id);
-          bindEditForm();
-          bindUpload();
-          return;
-        }
+      const hash = location.hash || '#home';
+      const needAuth = hash !== '#login';
+      const token = getToken();
 
-        if (h === '#nueva'){
-          setActiveNav('#nueva');
-          showSection('nueva');
-          await prefetchRefs();
-          bindNueva();
-          return;
-        }
-
-        if (h === '#mis-solicitudes'){
-          setActiveNav('#mis-solicitudes');
-          showSection('mis-solicitudes');
-          await loadMisSolicitudes();
-          bindMisSolicitudes();
-          return;
-        }
-
-        setActiveNav('#home');
-        showSection('home');
-        await loadHome();
-        $('#btnRefreshClient')?.addEventListener('click', loadHome);
-      }catch(e){
-        console.error('router error', e);
-        toast('Error en router');
+      if (needAuth && !token) { showOnly('login'); return; }
+      if (!needAuth && token) { // estás logueado y entraste a #login a propósito
+        $('#leftNav').style.display = 'grid';
       }
+
+      if (hash.startsWith('#solicitudes/edit')){
+        const id = new URLSearchParams(hash.split('?')[1]||'').get('id');
+        await prefetchRefs();
+        await enterEditById(id);
+        return;
+      }
+      if (hash === '#nueva'){
+        showOnly('nueva');
+        await prefetchRefs(); bindNueva(); return;
+      }
+      if (hash === '#mis-solicitudes'){
+        showOnly('mis-solicitudes');
+        await loadMisSolicitudes(); bindMisSolicitudes(); return;
+      }
+      showOnly('home');
+      await loadHome();
+      $('#btnRefreshClient')?.addEventListener('click', loadHome);
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Eventos globales
-    ////////////////////////////////////////////////////////////////////////////
-    $('#btnLogout')?.addEventListener('click', ()=>{
-      localStorage.clear();
-      location.replace('/client/login.html');
+    // ===== Binds globales
+    $('#formLogin')?.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      $('#loginErr').style.display='none';
+      const f = e.target;
+      const { email, password } = Object.fromEntries(new FormData(f).entries());
+      const r = await loginPost(email, password);
+      if(!r.ok){
+        $('#loginErr').textContent = r.error || 'Credenciales inválidas';
+        $('#loginErr').style.display='block';
+        return;
+      }
+      setToken(r.token);
+      state.me = r.user || null;
+      $('#who').textContent = r.user ? `Cliente: ${r.user.full_name || r.user.email}` : '';
+      toast('Bienvenido');
+      location.hash = '#home'; // MISMA PÁGINA, cambiamos sección
     });
 
-    window.addEventListener('hashchange', router);
+    $('#btnLogout')?.addEventListener('click', ()=>{
+      clearToken();
+      state.me = null; $('#who').textContent = '';
+      location.hash = '#login'; // MISMA PÁGINA
+    });
 
-    // Sincroniza el hidden de upload con el id en edición
-    function syncUploadRequestId(){
-      const f = document.querySelector('#formReqEdit');
-      const up = document.querySelector('#uploadRequestId');
-      if(f && up && f.elements.id && f.elements.id.value){ up.value = f.elements.id.value; }
-    }
-    window.addEventListener('hashchange', ()=>{ if (location.hash.startsWith('#solicitudes/edit')) setTimeout(syncUploadRequestId, 200); });
-    document.addEventListener('DOMContentLoaded', syncUploadRequestId);
+    // Enlaces del nav: aseguro que no naveguen fuera
+    $$('#leftNav a').forEach(a=>{
+      a.addEventListener('click', (ev)=>{
+        const href = a.getAttribute('href') || '#home';
+        if (href.startsWith('#')) { ev.preventDefault(); location.hash = href; }
+      });
+    });
 
-    // Arranque
+    // Init
     (async ()=>{
-      if(!location.hash) location.hash = '#home';
+      const t = getToken();
+      if (t) { $('#leftNav').style.display='grid'; $('#btnLogout').style.display='inline-flex'; }
+      window.addEventListener('hashchange', router);
+      if(!location.hash) location.hash = t ? '#home' : '#login';
       await prefetchRefs();
       await router();
     })();
