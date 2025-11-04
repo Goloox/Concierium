@@ -49,7 +49,7 @@ async function prefetchRefs(){
   REF.destinations = dItems;
   REF.providers    = pItems;
 
-  // Selects del formulario CREAR
+  // Selects del formulario CREAR (servicios)
   const selDest = $('#selDestination');
   if (selDest) {
     selDest.innerHTML = `<option value="">— sin destino —</option>` +
@@ -65,7 +65,7 @@ async function prefetchRefs(){
         .map(p=>`<option value="${p.id}">${p.name} · ${p.type}</option>`).join('');
   }
 
-  // Selects del formulario EDIT
+  // Selects del formulario EDIT (servicios)
   const selDestE = $('#selDestinationEdit');
   if (selDestE) {
     selDestE.innerHTML = `<option value="">— sin destino —</option>` +
@@ -161,7 +161,7 @@ async function loadDash(){
 $('#btnRefresh')?.addEventListener('click', loadDash);
 
 /* =========================
-   DESTINOS
+   DESTINOS (lista + crear)
 ========================= */
 async function loadDestinos(){
   const d = await fget('/.netlify/functions/admin-destinations-list');
@@ -172,6 +172,10 @@ async function loadDestinos(){
     tr.innerHTML = `<td>${it.name}</td><td>${it.country||'—'}</td><td>${it.region||'—'}</td><td>${it.sort_order}</td><td>${it.is_active?'Sí':'No'}</td>
     <td><button class="btn" data-id="${it.id}" data-type="editDest">Editar</button></td>`;
     tb.appendChild(tr);
+  });
+  // editar -> router
+  tb.querySelectorAll('button[data-type="editDest"]').forEach(btn=>{
+    btn.onclick = ()=> { location.hash = `#destinos/edit?id=${btn.dataset.id}`; };
   });
 }
 $('#formDest')?.addEventListener('submit', async (e)=>{
@@ -185,7 +189,7 @@ $('#formDest')?.addEventListener('submit', async (e)=>{
 });
 
 /* =========================
-   PROVEEDORES
+   PROVEEDORES (lista + crear)
 ========================= */
 async function loadProveedores(){
   const d = await fget('/.netlify/functions/admin-providers-list');
@@ -196,6 +200,10 @@ async function loadProveedores(){
     tr.innerHTML = `<td>${it.name}</td><td>${it.type}</td><td>${it.email||'—'}</td><td>${it.phone||'—'}</td><td>${it.rating??'—'}</td><td>${it.is_active?'Sí':'No'}</td>
     <td><button class="btn" data-id="${it.id}" data-type="editProv">Editar</button></td>`;
     tb.appendChild(tr);
+  });
+  // editar -> router
+  tb.querySelectorAll('button[data-type="editProv"]').forEach(btn=>{
+    btn.onclick = ()=> { location.hash = `#proveedores/edit?id=${btn.dataset.id}`; };
   });
 }
 $('#formProv')?.addEventListener('submit', async (e)=>{
@@ -209,7 +217,7 @@ $('#formProv')?.addEventListener('submit', async (e)=>{
 });
 
 /* =========================
-   SERVICIOS (listado + crear)
+   SERVICIOS (lista + crear)
 ========================= */
 async function loadServicios(){
   const d = await fget('/.netlify/functions/admin-services-list');
@@ -229,7 +237,6 @@ async function loadServicios(){
     tb.appendChild(tr);
   });
 
-  // Editar -> router abre pantalla de edición
   tb.querySelectorAll('.btnEditServ').forEach(btn=>{
     btn.onclick = () => { location.hash = `#servicios/edit?id=${btn.dataset.id}`; };
   });
@@ -258,7 +265,7 @@ $('#formServ')?.addEventListener('submit', async (e)=>{
 async function openServiceEdit(id){
   await prefetchRefs();
 
-  // Ideal: tener /admin-services-get?id=... ; mientras, usamos la lista y filtramos
+  // Ideal: endpoint get-by-id; por ahora, desde la lista
   const d = await fget('/.netlify/functions/admin-services-list');
   const item = (d.items||[]).find(x => x.id === id);
   if(!item){
@@ -267,7 +274,6 @@ async function openServiceEdit(id){
     return;
   }
 
-  // Prefill
   const f = $('#formServEdit');
   f.id.value            = item.id;
   f.service_kind.value  = item.kind;
@@ -276,13 +282,11 @@ async function openServiceEdit(id){
   f.base_price_usd.value= item.base_price_usd ?? '';
   f.is_active.value     = item.is_active ? 'true' : 'false';
 
-  // Con IDs si el backend los devuelve; de lo contrario, fallback por nombre
   const dest = REF.destinations.find(dd => dd.id===item.destination_id) || REF.destinations.find(dd => dd.name===item.destination);
   const prov = REF.providers.find(pp => pp.id===item.provider_id)       || REF.providers.find(pp => pp.name===item.provider);
   $('#selDestinationEdit').value = dest ? dest.id : '';
   $('#selProviderEdit').value    = prov ? prov.id : '';
 
-  // Preview
   $('#servPreview').innerHTML = `
     <div><b>${item.name}</b></div>
     <div class="muted">${item.kind} · ${dest?dest.name:'—'} · ${prov?prov.name:'—'}</div>
@@ -313,7 +317,84 @@ $('#formServEdit')?.addEventListener('submit', async (e)=>{
 $('#btnBackServicios')?.addEventListener('click', ()=>{ location.hash = '#servicios'; });
 
 /* =========================
-   SOLICITUDES
+   DESTINO - Edición (pantalla)
+========================= */
+async function openDestinationEdit(id){
+  const d = await fget('/.netlify/functions/admin-destinations-list');
+  const item = (d.items||[]).find(x=> x.id===id);
+  if(!item){ toast('Destino no encontrado','err'); location.hash='#destinos'; return; }
+
+  const f = $('#formDestEdit');
+  f.id.value = item.id;
+  f.name.value = item.name;
+  f.country.value = item.country||'';
+  f.region.value = item.region||'';
+  f.sort_order.value = item.sort_order ?? 100;
+  f.is_active.value = item.is_active ? 'true' : 'false';
+
+  $('#destPreview').innerHTML = `
+    <div><b>${item.name}</b></div>
+    <div class="muted">${item.country||'—'} · ${item.region||'—'}</div>
+    <div>Orden: ${item.sort_order}</div>
+    <div>Activo: ${item.is_active?'Sí':'No'}</div>
+  `;
+
+  showSectionById('destino-edit');
+}
+
+$('#formDestEdit')?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  body.sort_order = +body.sort_order;
+  body.is_active  = body.is_active === 'true';
+  const r = await fpost('/.netlify/functions/admin-destinations-upsert', body);
+  $('#msgDestEdit').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+  if(r.ok){ toast('Destino actualizado','ok',2200); location.hash='#destinos'; await loadDestinos(); }
+});
+
+$('#btnBackDestinos')?.addEventListener('click', ()=>{ location.hash = '#destinos'; });
+
+/* =========================
+   PROVEEDOR - Edición (pantalla)
+========================= */
+async function openProviderEdit(id){
+  const d = await fget('/.netlify/functions/admin-providers-list');
+  const item = (d.items||[]).find(x=> x.id===id);
+  if(!item){ toast('Proveedor no encontrado','err'); location.hash='#proveedores'; return; }
+
+  const f = $('#formProvEdit');
+  f.id.value   = item.id;
+  f.name.value = item.name;
+  f.type.value = item.type;
+  f.email.value= item.email||'';
+  f.phone.value= item.phone||'';
+  f.rating.value = item.rating ?? '';
+  f.is_active.value = item.is_active ? 'true' : 'false';
+
+  $('#provPreview').innerHTML = `
+    <div><b>${item.name}</b></div>
+    <div class="muted">${item.type}</div>
+    <div>Email: ${item.email||'—'} · Tel: ${item.phone||'—'}</div>
+    <div>Rating: ${item.rating??'—'} · Activo: ${item.is_active?'Sí':'No'}</div>
+  `;
+
+  showSectionById('proveedor-edit');
+}
+
+$('#formProvEdit')?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  body.rating    = body.rating===''?null:+body.rating;
+  body.is_active = body.is_active === 'true';
+  const r = await fpost('/.netlify/functions/admin-providers-upsert', body);
+  $('#msgProvEdit').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+  if(r.ok){ toast('Proveedor actualizado','ok',2200); location.hash='#proveedores'; await loadProveedores(); }
+});
+
+$('#btnBackProveedores')?.addEventListener('click', ()=>{ location.hash = '#proveedores'; });
+
+/* =========================
+   SOLICITUDES (lista)
 ========================= */
 async function loadRequests(){
   const st = $('#fltStatus').value;
@@ -333,7 +414,10 @@ async function loadRequests(){
           <option>confirmed</option><option>closed</option><option>discarded</option>
         </select>
       </td>
-      <td><button class="btn btnGo" data-id="${it.id}">Cambiar</button></td>
+      <td style="display:flex;gap:6px">
+        <button class="btn btnGo" data-id="${it.id}">Cambiar</button>
+        <button class="btn btnEditReq" data-id="${it.id}">Editar</button>
+      </td>
     `;
     tb.appendChild(tr);
   });
@@ -350,8 +434,44 @@ async function loadRequests(){
       loadRequests();
     };
   });
+
+  tb.querySelectorAll('.btnEditReq').forEach(btn=>{
+    btn.onclick = ()=> { location.hash = `#solicitudes/edit?id=${btn.dataset.id}`; };
+  });
 }
 $('#btnLoadReq')?.addEventListener('click', loadRequests);
+
+/* =========================
+   SOLICITUD - Edición (pantalla)
+========================= */
+async function openRequestEdit(id){
+  const d = await fget('/.netlify/functions/admin-requests-list');
+  const item = (d.items||[]).find(x=> x.id===id);
+  if(!item){ toast('Solicitud no encontrada','err'); location.hash='#solicitudes'; return; }
+
+  const f = $('#formReqEdit');
+  f.id.value = item.id;
+  f.to_status.value = item.estado;
+
+  $('#reqPreview').innerHTML = `
+    <div><b>${item.id}</b></div>
+    <div>Cliente: ${item.cliente}</div>
+    <div>Servicio: ${item.servicio} · Destino: ${item.destino}</div>
+    <div>Estado actual: ${item.estado}</div>
+  `;
+
+  showSectionById('solicitud-edit');
+}
+
+$('#formReqEdit')?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries()); // { id, to_status }
+  const r = await fpost('/.netlify/functions/admin-requests-status', body);
+  $('#msgReqEdit').textContent = r.ok ? 'Estado actualizado' : (r.error||'Error');
+  if(r.ok){ toast('Solicitud actualizada','ok',2200); location.hash='#solicitudes'; await loadRequests(); }
+});
+
+$('#btnBackSolicitudes')?.addEventListener('click', ()=>{ location.hash = '#solicitudes'; });
 
 /* =========================
    Router
@@ -377,9 +497,21 @@ async function router(){
     await loadDestinos();
     return;
   }
+  if (path.startsWith('#destinos/edit')) {
+    const id = params.id || '';
+    if (!id) { toast('Falta id','warn'); location.hash = '#destinos'; return; }
+    await openDestinationEdit(id);
+    return;
+  }
   if (path === '#proveedores') {
     showSectionById('proveedores');
     await loadProveedores();
+    return;
+  }
+  if (path.startsWith('#proveedores/edit')) {
+    const id = params.id || '';
+    if (!id) { toast('Falta id','warn'); location.hash = '#proveedores'; return; }
+    await openProviderEdit(id);
     return;
   }
   if (path === '#servicios') {
@@ -397,6 +529,12 @@ async function router(){
   if (path === '#solicitudes') {
     showSectionById('solicitudes');
     await loadRequests();
+    return;
+  }
+  if (path.startsWith('#solicitudes/edit')) {
+    const id = params.id || '';
+    if (!id) { toast('Falta id','warn'); location.hash = '#solicitudes'; return; }
+    await openRequestEdit(id);
     return;
   }
 
