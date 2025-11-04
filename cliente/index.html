@@ -7,27 +7,37 @@
   <style>
     :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;display:grid;grid-template-rows:auto 1fr}
-    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
+      background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
+                 radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
+      display:grid;grid-template-rows:auto 1fr}
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;
+      background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
     .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);
+      padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
     .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
     aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
     .nav{display:grid;gap:8px}
     .nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
-    .nav a:hover{background:rgba(255,255,255,.06)} .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
+    .nav a:hover{background:rgba(255,255,255,.06)}
+    .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
     main{padding:20px}
     h2{margin:10px 0 12px}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
+      border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
     .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
     @media (max-width:1100px){ .col-3,.col-4,.col-6,.col-8{grid-column:span 12} }
     label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
     input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1018;color:var(--text)}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
     tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
     .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
-    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
+    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
   </style>
 </head>
 <body>
@@ -63,7 +73,7 @@
             <h3>Recientes</h3>
             <div style="overflow:auto">
               <table>
-                <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr></thead>
+                <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Desde</th><th></th></tr></thead>
                 <tbody id="tblMyRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
               </table>
             </div>
@@ -197,242 +207,6 @@
 
   <div id="toast"></div>
 
-  <script>
-  // ====== CONFIG (un solo endpoint) ======
-  const API = '/.netlify/functions/api';
-  const EP = {
-    publicDest: API + '?op=public-destinations',
-    publicServ: API + '?op=public-services',
-    list:       API + '?op=client-requests-list',
-    upsert:     API + '?op=client-requests-upsert',
-    status:     API + '?op=client-requests-status',
-    attachList: API + '?op=client-attachments-list',
-    ping:       API + '?op=ping'
-  };
-
-  // ====== UTILS ======
-  const token = localStorage.getItem('token') || '';
-  const $=(s,el=document)=>el.querySelector(s);
-  const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
-
-  function toast(msg, type='warn', ms=3500){
-    const t = $('#toast'); if(!t) return;
-    t.textContent = msg;
-    t.style.borderColor = type==='err' ? '#ef4444' : (type==='ok' ? '#19c37d' : 'rgba(255,255,255,.12)');
-    t.style.display = 'block';
-    clearTimeout(t._to); t._to = setTimeout(()=> t.style.display='none', ms);
-  }
-  const authHeaders = ()=> token ? { Authorization:'Bearer '+token } : {};
-  async function asJson(r){ const txt=await r.text(); try{ return JSON.parse(txt||'{}'); }catch{return{ok:false,error:txt||r.statusText}} }
-  async function fget(url){ try{ const r=await fetch(url,{headers:authHeaders()}); if(!r.ok) return {ok:false,error:`${r.status} ${r.statusText}`}; return asJson(r);}catch(e){return{ok:false,error:String(e)}} }
-  async function fpost(url,body){ try{ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body||{})}); if(!r.ok) return {ok:false,error:`${r.status} ${r.statusText}`}; return asJson(r);}catch(e){return{ok:false,error:String(e)}} }
-
-  // ====== NAV ======
-  function show(id){
-    const sections = $$('.section');
-    const target = sections.find(s => s.id === id) ? id : 'home';
-    sections.forEach(s => s.style.display = (s.id === target ? 'block' : 'none'));
-    $$('.nav a').forEach(a => a.classList.toggle('active', a.dataset.target === target));
-  }
-  async function routeFromHash(){
-    const h = (location.hash || '#home').slice(1);
-    if(h.startsWith('edit:')){ await openMyRequestEdit(h.slice(5)); return; }
-    show(h);
-    if(h==='home'){ await loadClientHome(); }
-    if(h==='nueva'){ await prefetchRefs(); }
-    if(h==='mis-solicitudes'){ await loadMyRequests(); }
-  }
-  document.addEventListener('click', async (ev)=>{
-    const a = ev.target.closest('a[href^="#"]');
-    if(!a) return;
-    const id = a.getAttribute('href').replace('#','');
-    const target = a.dataset.target || id;
-    ev.preventDefault();
-    history.replaceState(null,'','#'+target);
-    await routeFromHash();
-  });
-  window.addEventListener('hashchange', routeFromHash);
-
-  // ====== REFS/CACHE ======
-  const REF = { destinations:[], services:[] };
-
-  async function prefetchRefs(){
-    const [dres, sres] = await Promise.all([ fget(EP.publicDest), fget(EP.publicServ) ]);
-    REF.destinations = dres?.items?.filter(x=>x.is_active!==false) || [];
-    REF.services     = sres?.items?.filter(x=>x.is_active!==false) || [];
-
-    const selDestN = $('#selDestinationNew');
-    if(selDestN){
-      selDestN.innerHTML = `<option value="">— selecciona —</option>` +
-        REF.destinations.sort((a,b)=>(a.sort_order-b.sort_order)||a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-    }
-    const selServN = $('#selServiceNew');
-    if(selServN){
-      selServN.innerHTML = `<option value="">— (opcional) —</option>` +
-        REF.services.sort((a,b)=> a.service_kind.localeCompare(b.service_kind) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
-    }
-
-    const selDestE = $('#selDestinationEdit');
-    if(selDestE){
-      selDestE.innerHTML = `<option value="">— sin destino —</option>` +
-        REF.destinations.sort((a,b)=>(a.sort_order-b.sort_order)||a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-    }
-    const selServE = $('#selServiceEdit');
-    if(selServE){
-      selServE.innerHTML = `<option value="">— (opcional) —</option>` +
-        REF.services.sort((a,b)=> a.service_kind.localeCompare(b.service_kind) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
-    }
-  }
-
-  // ====== HOME ======
-  async function loadClientHome(){
-    // KPI rápido: contar mis solicitudes desde list
-    const d = await fget(EP.list);
-    $('#kpiMine').textContent = d?.items?.length ?? '—';
-    const chips = $('#chipsMine'); if(chips){ chips.innerHTML = ''; chips.appendChild(Object.assign(document.createElement('span'),{className:'chip',textContent:'list '+(d?.ok!==false?'200':'ERR'),style:`color:${d?.ok!==false?'#19c37d':'#ef4444'}`})); }
-    const tb = $('#tblMyRecent'); tb.innerHTML = '';
-    if(d?.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${d.error||'Dashboard no disponible'}</td></tr>`; return; }
-    (d.items||[]).slice(0,10).forEach(r=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${r.id}</td><td>${r.servicio||'—'}</td><td>${r.destino||'—'}</td><td>${r.current_status||'—'}</td><td>${(r.start_date||'').toString().slice(0,10)}</td>
-                      <td><button class="btn btnOpenReq" data-id="${r.id}">Abrir</button></td>`;
-      tb.appendChild(tr);
-    });
-    if(!(d.items||[]).length){ tb.innerHTML = `<tr><td colspan="6" class="muted">Sin recientes</td></tr>`; }
-    tb.querySelectorAll('.btnOpenReq').forEach(b=> b.onclick = ()=> openMyRequestEdit(b.dataset.id));
-  }
-  $('#btnRefreshClient')?.addEventListener('click', loadClientHome);
-
-  // ====== NUEVA SOLICITUD ======
-  $('#formNewReq')?.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    if(!token){ toast('Sesión expirada. Inicia sesión.','warn'); return location.replace('/login.html'); }
-    const fd = new FormData(e.target);
-    const body = Object.fromEntries(fd.entries());
-    body.guests = body.guests? +body.guests : null;
-    body.budget_usd = body.budget_usd? +body.budget_usd : null;
-    body.destination_id = body.destination_id || null;
-    body.catalog_id     = body.catalog_id || null;
-    body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
-    if(!body.service_kind){ toast('Selecciona un tipo de servicio'); return; }
-    const r = await fpost(EP.upsert, body);
-    $('#msgNewReq').textContent = r.ok ? 'Solicitud creada' : (r.error||'Error');
-    if(r.ok){ toast('Solicitud enviada','ok',2200); e.target.reset(); await loadMyRequests(); history.replaceState(null,'','#mis-solicitudes'); await routeFromHash(); }
-    else { toast(r.error||'Error al crear','err'); }
-  });
-
-  // ====== MIS SOLICITUDES ======
-  async function loadMyRequests(){
-    const st = $('#fltStatusMyReq')?.value || '';
-    const url = st ? (EP.list + '&status=' + encodeURIComponent(st)) : EP.list;
-    const d = await fget(url);
-    const tb = $('#tblMyReq'); tb.innerHTML='';
-    if(d?.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${d.error||'No disponible'}</td></tr>`; return; }
-    (d.items||[]).forEach(it=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${it.id}</td><td>${it.servicio||'—'}</td><td>${it.destino||'—'}</td>
-        <td>${it.start_date || '—'}</td><td>${it.current_status||'—'}</td>
-        <td style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn" data-act="open" data-id="${it.id}">Abrir</button>
-          ${it.current_status!=='discarded' && it.current_status!=='closed' ? `<button class="btn" data-act="cancel" data-id="${it.id}">Cancelar</button>` : ''}
-        </td>`;
-      tb.appendChild(tr);
-    });
-    if(!(d.items||[]).length){ tb.innerHTML = `<tr><td colspan="6" class="muted">No tienes solicitudes</td></tr>`; }
-    tb.querySelectorAll('button[data-act="open"]').forEach(btn=> btn.onclick = ()=> openMyRequestEdit(btn.dataset.id));
-    tb.querySelectorAll('button[data-act="cancel"]').forEach(btn=>{
-      btn.onclick = async ()=>{
-        if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-        const r = await fpost(EP.status, { id: btn.dataset.id, to_status:'discarded' });
-        if(!r.ok){ toast(r.error||'Error','err'); return; }
-        toast('Solicitud cancelada','ok',2000);
-        await loadMyRequests(); await loadClientHome();
-      };
-    });
-  }
-  $('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
-
-  // ====== EDIT ======
-  async function openMyRequestEdit(id){
-    if(!id){ toast('ID no válido','err'); return; }
-    await prefetchRefs();
-    const d = await fget(EP.list);
-    const item = (d.items||[]).find(x=> x.id===id);
-    if(!item){ toast('Solicitud no encontrada','err'); history.replaceState(null,'','#mis-solicitudes'); return routeFromHash(); }
-
-    const f = $('#formReqEdit');
-    f.id.value = item.id;
-    f.service_kind.value = item.service_kind || item.servicio_kind || '';
-    f.start_date.value   = item.start_date || '';
-    f.end_date.value     = item.end_date || '';
-    f.guests.value       = item.guests ?? '';
-    f.budget_usd.value   = item.budget_usd ?? '';
-    f.dietary_notes.value= item.dietary_notes || '';
-    f.interests.value    = (item.interests||[]).join(', ');
-    f.notes.value        = item.notes || '';
-
-    const dest = REF.destinations.find(dd => dd.id===item.destination_id) || REF.destinations.find(dd => dd.name===item.destino);
-    const serv = REF.services.find(ss => ss.id===item.catalog_id)         || REF.services.find(ss => ss.name===item.servicio);
-    $('#selDestinationEdit').value = dest ? dest.id : '';
-    $('#selServiceEdit').value     = serv ? serv.id : '';
-
-    $('#reqPreview').innerHTML = `
-      <div><b>Folio:</b> ${item.id}</div>
-      <div><b>Servicio:</b> ${item.servicio||'—'} (${item.service_kind||'—'})</div>
-      <div><b>Destino:</b> ${item.destino||'—'}</div>
-      <div><b>Fecha:</b> ${item.start_date||'—'} ${item.end_date?('→ '+item.end_date):''}</div>
-      <div><b>Huéspedes:</b> ${item.guests??'—'} · <b>Presupuesto:</b> ${item.budget_usd??'—'}</div>
-      <div><b>Estado:</b> ${item.current_status}</div>
-    `;
-
-    await loadAttachmentsList(item.id);
-
-    show('solicitud-edit');
-    history.replaceState(null,'','#edit:'+item.id);
-  }
-
-  $('#formReqEdit')?.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const body = Object.fromEntries(fd.entries());
-    body.guests = body.guests ? +body.guests : null;
-    body.budget_usd = body.budget_usd ? +body.budget_usd : null;
-    body.destination_id = body.destination_id || null;
-    body.catalog_id     = body.catalog_id || null;
-    body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
-    const r = await fpost(EP.upsert, body);
-    $('#msgReqEdit').textContent = r.ok ? 'Cambios guardados' : (r.error||'Error');
-    if(r.ok){ toast('Solicitud actualizada','ok',2000); await loadMyRequests(); await loadClientHome(); }
-    else { toast(r.error||'Error al guardar','err'); }
-  });
-
-  async function loadAttachmentsList(request_id){
-    const ul = $('#attachmentsList'); if(!ul) return;
-    ul.innerHTML = '<li class="muted">Cargando…</li>';
-    const d = await fget(EP.attachList + '&request_id=' + encodeURIComponent(request_id));
-    if(d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'No disponible'}</li>`; return; }
-    if(!(d.items||[]).length){ ul.innerHTML = `<li class="muted">Sin archivos</li>`; return; }
-    ul.innerHTML = '';
-    (d.items||[]).forEach(a=>{
-      const li=document.createElement('li');
-      li.innerHTML = `<div><b>${a.file_name}</b> <span class="muted">(${a.mime_type}, ${(a.size_bytes/1024).toFixed(1)} KB)</span></div>
-                      ${a.storage_url ? `<div><a class="btn" href="${a.storage_url}" target="_blank" rel="noopener">Ver/Descargar</a></div>` : ''}`;
-      ul.appendChild(li);
-    });
-  }
-
-  // ====== BOOT ======
-  document.getElementById('btnLogout')?.addEventListener('click', ()=>{ localStorage.clear(); location.replace('/login.html'); });
-  (async function init(){
-    if(!token){ toast('Sesión requerida','warn'); return location.replace('/login.html'); }
-    show(((location.hash||'#home').slice(1).split(':')[0]) || 'home');
-    await routeFromHash();
-  })();
-  </script>
+  <script src="/js/dashboardCliente.js"></script>
 </body>
 </html>
