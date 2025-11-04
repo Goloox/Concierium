@@ -1,4 +1,3 @@
-// Conexion pool singleton para Neon (pg)
 import { Pool } from "pg";
 
 let _pool;
@@ -8,14 +7,11 @@ export function db() {
   if (!connectionString) throw new Error("DATABASE_URL missing");
   _pool = new Pool({
     connectionString,
-    // Neon requiere SSL
-    ssl: { rejectUnauthorized: false },
+    ssl: { rejectUnauthorized: false }, // Neon
     max: 10,
-    idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
-    allowExitOnIdle: false,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
   });
-  // sane defaults por sesión
   _pool.on("connect", async (client) => {
     await client.query(`
       SET application_name = 'concierium-admin';
@@ -26,7 +22,6 @@ export function db() {
   return _pool;
 }
 
-// helper para respuestas JSON consistentes (evita 502 por body no JSON)
 export function json(statusCode, payload) {
   return {
     statusCode,
@@ -35,12 +30,9 @@ export function json(statusCode, payload) {
   };
 }
 
-// wrapper seguro
 export async function safeHandler(fn) {
-  try {
-    const res = await fn();
-    return res;
-  } catch (err) {
+  try { return await fn(); }
+  catch (err) {
     console.error(err);
     return json(200, { ok: false, error: err.message || "Server error" });
   }
