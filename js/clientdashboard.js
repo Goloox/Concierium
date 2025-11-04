@@ -1,5 +1,10 @@
-// /js/clientdashboard.js  (ESM)
+// public/js/clientdashboard.js  (ESM, archivo único)
 const token = localStorage.getItem('token') || '';
+if (!token) {
+  // Guard mínimo: exige token para ver el cliente
+  location.replace('/login.html');
+}
+
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
 
@@ -10,8 +15,11 @@ const authHeaders = () => ({ Authorization: 'Bearer ' + token });
 
 const fget = (url) =>
   fetch(url, { headers: authHeaders() })
-    .then(r => r.json())
-    .catch(e => ({ ok:false, error:String(e) }));
+    .then(async r => {
+      if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+      return r.json();
+    })
+    .catch(e => ({ ok:false, error:String(e.message||e) }));
 
 const fpost = (url, body) =>
   fetch(url, {
@@ -19,13 +27,19 @@ const fpost = (url, body) =>
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(body)
   })
-  .then(r => r.json())
-  .catch(e => ({ ok:false, error:String(e) }));
+  .then(async r => {
+    if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+    return r.json();
+  })
+  .catch(e => ({ ok:false, error:String(e.message||e) }));
 
 const fupload = (url, formData) =>
   fetch(url, { method: 'POST', headers: authHeaders(), body: formData })
-    .then(r => r.json())
-    .catch(e => ({ ok:false, error:String(e) }));
+    .then(async r => {
+      if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
+      return r.json();
+    })
+    .catch(e => ({ ok:false, error:String(e.message||e) }));
 
 /* =========================
    Toast
@@ -90,7 +104,7 @@ async function prefetchRefs(){
 }
 
 /* =========================
-   UI helpers
+   UI helpers + Router
 ========================= */
 function showSectionById(id){
   const sections = $$('.section');
@@ -129,7 +143,7 @@ async function loadClientHome(){
     (data.por_estado||[]).forEach(r=>{
       const span = document.createElement('span');
       span.textContent = `${r.status}: ${r.total}`;
-      span.style.cssText = 'padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px';
+      span.className = 'chip';
       if(palette[r.status]==='ok')   span.style.color='#19c37d';
       if(palette[r.status]==='warn') span.style.color='#f5a524';
       if(palette[r.status]==='err')  span.style.color='#ef4444';
@@ -187,7 +201,7 @@ async function loadMyRequests(){
   const d = await fget(url);
   const tb = $('#tblMyReq'); if(!tb) return;
   tb.innerHTML='';
-  if(d?.error || d?.ok===false){ tb.innerHTML=`<tr><td colspan="7" class="muted">${d.error||'Error'}</td></tr>`; return; }
+  if(d?.error || d?.ok===false){ tb.innerHTML=`<tr><td colspan="6" class="muted">${d.error||'Error'}</td></tr>`; return; }
   (d.items||[]).forEach(it=>{
     const tr=document.createElement('tr');
     tr.innerHTML = `
@@ -219,7 +233,7 @@ async function loadMyRequests(){
     };
   });
 
-  if(!(d.items||[]).length) tb.innerHTML=`<tr><td colspan="7" class="muted">No tienes solicitudes</td></tr>`;
+  if(!(d.items||[]).length) tb.innerHTML=`<tr><td colspan="6" class="muted">No tienes solicitudes</td></tr>`;
 }
 $('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
 
@@ -229,7 +243,7 @@ $('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
 async function openMyRequestEdit(id){
   await prefetchRefs();
 
-  // Trae lista y busca (o crea endpoint get-by-id si lo prefieres)
+  // Trae lista y busca (si tienes endpoint get-by-id, cámbialo aquí)
   const d = await fget('/.netlify/functions/client-requests-list');
   const item = (d.items||[]).find(x=> x.id===id);
   if(!item){ toast('Solicitud no encontrada','err'); location.hash='#mis-solicitudes'; return; }
@@ -244,7 +258,7 @@ async function openMyRequestEdit(id){
     $('#selDestinationEdit').value = dest ? dest.id : '';
     $('#selServiceEdit').value     = serv ? serv.id : '';
     // inputs comunes
-    f.service_kind.value = item.service_kind || item.servicio_kind || ''; // por si el backend lo expone con otro alias
+    f.service_kind.value = item.service_kind || item.servicio_kind || '';
     f.start_date.value   = item.start_date || '';
     f.end_date.value     = item.end_date || '';
     f.guests.value       = item.guests ?? '';
@@ -266,6 +280,10 @@ async function openMyRequestEdit(id){
 
   // Adjuntos: listar
   await loadAttachmentsList(item.id);
+
+  // Sincroniza request_id del form de subida
+  const up = $('#uploadRequestId');
+  if (up) up.value = item.id;
 
   showSectionById('solicitud-edit');
 }
@@ -291,7 +309,7 @@ $('#formReqEdit')?.addEventListener('submit', async (e)=>{
   }
 });
 
-// Cancelar desde la vista de edición (si agregas un botón con id=btnCancelReq)
+// Cancelar desde la vista de edición
 $('#btnCancelReq')?.addEventListener('click', async ()=>{
   const id = $('#formReqEdit')?.id?.value;
   if(!id) return;
@@ -332,7 +350,7 @@ $('#formUpload')?.addEventListener('submit', async (e)=>{
   const file = fd.get('file');
   const request_id = fd.get('request_id');
   if(!file || !request_id){ toast('Selecciona un archivo y una solicitud','warn'); return; }
-  // Validación ligera por UI (backend validará igual)
+  // Validación ligera por UI
   const okType = /^(application\/pdf|image\/png|image\/jpe?g)$/i.test(file.type);
   if(!okType){ toast('Tipo no permitido (solo PDF/JPG/PNG)','warn'); return; }
   if(file.size > 10*1024*1024){ toast('Archivo > 10MB','warn'); return; }
@@ -383,7 +401,6 @@ async function router(){
   showSectionById('home');
   await loadClientHome();
 }
-
 window.addEventListener('hashchange', router);
 
 /* =========================
