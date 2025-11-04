@@ -75,9 +75,9 @@
   <div class="wrap">
     <aside>
       <nav class="nav">
-        <a href="#home" class="active">Home</a>
-        <a href="#nueva">Nueva solicitud</a>
-        <a href="#mis-solicitudes">Mis solicitudes</a>
+        <a href="#home" class="active" data-target="home">Home</a>
+        <a href="#nueva" data-target="nueva">Nueva solicitud</a>
+        <a href="#mis-solicitudes" data-target="mis-solicitudes">Mis solicitudes</a>
       </nav>
     </aside>
 
@@ -127,13 +127,13 @@
                 <div class="col-6">
                   <label>Destino</label>
                   <select name="destination_id" id="selDestinationNew">
-                    <option value="">— selecciona —</option>
+                    <option value="">— cargando… —</option>
                   </select>
                 </div>
                 <div class="col-12">
                   <label>Servicio (catálogo) — opcional</label>
                   <select name="catalog_id" id="selServiceNew">
-                    <option value="">— (opcional) —</option>
+                    <option value="">— cargando… —</option>
                   </select>
                 </div>
                 <div class="col-3">
@@ -198,113 +198,4 @@
               <thead>
                 <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr>
               </thead>
-              <tbody id="tblMyReq"><tr><td colspan="6">Cargando…</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- SOLICITUD EDIT -->
-      <section id="solicitud-edit" class="section" style="display:none">
-        <h2>Editar solicitud</h2>
-
-        <div class="card" style="margin-bottom:12px;display:flex;gap:10px">
-          <a class="btn" href="#mis-solicitudes">← Volver a Mis solicitudes</a>
-          <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
-        </div>
-
-        <div class="grid">
-          <div class="card col-6">
-            <h3>Formulario</h3>
-            <form id="formReqEdit">
-              <input type="hidden" name="id">
-              <div class="grid">
-                <div class="col-6">
-                  <label>Tipo de servicio</label>
-                  <select name="service_kind" required>
-                    <option value="lodging">lodging</option>
-                    <option value="tour">tour</option>
-                    <option value="dining">dining</option>
-                    <option value="vip">vip</option>
-                  </select>
-                </div>
-                <div class="col-6">
-                  <label>Destino</label>
-                  <select name="destination_id" id="selDestinationEdit">
-                    <option value="">— sin destino —</option>
-                  </select>
-                </div>
-                <div class="col-12">
-                  <label>Servicio (catálogo) — opcional</label>
-                  <select name="catalog_id" id="selServiceEdit">
-                    <option value="">— (opcional) —</option>
-                  </select>
-                </div>
-                <div class="col-6">
-                  <label>Desde</label>
-                  <input type="date" name="start_date">
-                </div>
-                <div class="col-6">
-                  <label>Hasta</label>
-                  <input type="date" name="end_date">
-                </div>
-                <div class="col-6">
-                  <label>Huéspedes</label>
-                  <input type="number" name="guests" min="1">
-                </div>
-                <div class="col-6">
-                  <label>Presupuesto (USD)</label>
-                  <input type="number" name="budget_usd" step="0.01" min="0">
-                </div>
-                <div class="col-12">
-                  <label>Preferencias alimentarias</label>
-                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
-                </div>
-                <div class="col-12">
-                  <label>Intereses (separa por comas)</label>
-                  <input name="interests" placeholder="playa, cultura, aventura…">
-                </div>
-                <div class="col-12">
-                  <label>Notas</label>
-                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
-                </div>
-              </div>
-              <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Guardar cambios</button>
-                <span id="msgReqEdit" class="muted"></span>
-              </div>
-            </form>
-          </div>
-
-          <div class="card col-6">
-            <h3>Resumen</h3>
-            <div id="reqPreview" class="muted">—</div>
-
-            <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:16px 0"/>
-
-            <h3>Adjuntos</h3>
-            <ul id="attachmentsList" style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
-              <li class="muted">—</li>
-            </ul>
-
-            <form id="formUpload" style="margin-top:12px">
-              <input type="hidden" name="request_id" id="uploadRequestId">
-              <label>Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
-              <input type="file" name="file" accept="application/pdf,image/png,image/jpeg">
-              <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Subir</button>
-                <span id="msgUpload" class="muted"></span>
-              </div>
-            </form>
-          </div>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div id="toast"></div>
-
-  <!-- ÚNICO JS -->
-  <script type="module" src="/public/js/clientdashboard.js"></script>
-</body>
-</html>
+              <tbody id="tblMyReq">
