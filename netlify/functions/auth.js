@@ -1,4 +1,3 @@
-// ESM
 import jwt from "jsonwebtoken";
 import { db } from "./_db.js";
 
