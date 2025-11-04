@@ -631,6 +631,13 @@
         await enterEditById(id);
         return;
       }
+      if (hash === '#calendario'){
+  showOnly('calendario');
+  bindCalendarNav();
+  await loadClientCalendar();
+  return;
+}
+
       if (hash === '#nueva'){
         showOnly('nueva');
         await prefetchRefs(); bindNueva(); return;
@@ -686,6 +693,129 @@
       await prefetchRefs();
       await router();
     })();
+
+
+  // ==== Calendario cliente (render simple sin librerías) ====
+  const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio",
+                      "Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+  const calState = { y: null, m: null, events: [] }; // m: 1..12
+
+  function firstDayOfMonth(y,m){ return new Date(Date.UTC(y,m-1,1)); }
+  function daysInMonth(y,m){ return new Date(Date.UTC(y,m,0)).getUTCDate(); }
+
+  function groupEventsByDay(events){
+    const map = {};
+    for(const ev of events){
+      const sd = new Date(ev.start || ev.end || Date.now());
+      const key = sd.toISOString().slice(0,10);
+      (map[key] = map[key] || []).push(ev);
+    }
+    return map;
+  }
+
+  function renderCalendarGrid(){
+    const title = $('#calTitle');
+    title.textContent = `${monthNames[calState.m-1]} ${calState.y}`;
+
+    const grid = $('#calGrid'); grid.innerHTML='';
+    const fd = firstDayOfMonth(calState.y, calState.m);
+    const dim = daysInMonth(calState.y, calState.m);
+
+    // Encabezado días
+    const labels = ['L','M','X','J','V','S','D'];
+    for(const l of labels){
+      const h = document.createElement('div');
+      h.textContent = l;
+      h.style.cssText = 'text-align:center;color:#9aa3b2;font-weight:600';
+      grid.appendChild(h);
+    }
+
+    // offset (que empiece en lunes)
+    let offset = fd.getUTCDay(); // 0=Dom
+    if (offset===0) offset = 7;
+    for(let i=1; i<offset; i++){
+      const d = document.createElement('div');
+      d.className='muted';
+      grid.appendChild(d);
+    }
+
+    const byDay = groupEventsByDay(calState.events);
+
+    for(let day=1; day<=dim; day++){
+      const cell = document.createElement('div');
+      cell.style.cssText = 'border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;min-height:90px;background:#161622;';
+      const dstr = `${calState.y}-${String(calState.m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const head = document.createElement('div');
+      head.textContent = day;
+      head.style.cssText='font-weight:700;margin-bottom:6px';
+      cell.appendChild(head);
+
+      const evs = byDay[dstr] || [];
+      if(evs.length===0){
+        const p = document.createElement('div');
+        p.className='muted';
+        p.textContent='—';
+        cell.appendChild(p);
+      } else {
+        evs.slice(0,4).forEach(ev=>{
+          const tag = document.createElement('div');
+          tag.style.cssText='font-size:12px;margin:2px 0;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.12)';
+          tag.textContent = `${ev.title} (${ev.status})`;
+          cell.appendChild(tag);
+        });
+        if (evs.length>4) {
+          const more = document.createElement('div');
+          more.className='muted';
+          more.textContent = `+${evs.length-4} más…`;
+          cell.appendChild(more);
+        }
+      }
+
+      grid.appendChild(cell);
+    }
+  }
+
+  async function fetchClientCalendar(y,m){
+    const res = await fetch('/.netlify/functions/api?' + new URLSearchParams({ op:'client-calendar', year:String(y), month:String(m) }),
+      { headers: { ...(getToken()? { Authorization:'Bearer '+getToken()} : {}) }});
+    const data = await res.json();
+    if(!data.ok){ toast(data.error||'Error cargando calendario'); return []; }
+    return data.items || [];
+  }
+
+  async function loadClientCalendar(){
+    // set default month to current
+    const now = new Date();
+    calState.y = calState.y || now.getUTCFullYear();
+    calState.m = calState.m || (now.getUTCMonth()+1);
+    calState.events = await fetchClientCalendar(calState.y, calState.m);
+    renderCalendarGrid();
+  }
+
+  function bindCalendarNav(){
+    $('#calPrev').onclick = async ()=>{
+      calState.m--; if(calState.m<=0){ calState.m=12; calState.y--; }
+      calState.events = await fetchClientCalendar(calState.y, calState.m);
+      renderCalendarGrid();
+    };
+    $('#calNext').onclick = async ()=>{
+      calState.m++; if(calState.m>=13){ calState.m=1; calState.y++; }
+      calState.events = await fetchClientCalendar(calState.y, calState.m);
+      renderCalendarGrid();
+    };
+    $('#calToday').onclick = async ()=>{
+      const now = new Date();
+      calState.y = now.getUTCFullYear();
+      calState.m = now.getUTCMonth()+1;
+      calState.events = await fetchClientCalendar(calState.y, calState.m);
+      renderCalendarGrid();
+    };
+  }
+
+  // Integra en tu router SPA:
+  // if (hash === '#calendario') { showOnly('calendario'); bindCalendarNav(); await loadClientCalendar(); return; }
+
   </script>
 </body>
 </html>
