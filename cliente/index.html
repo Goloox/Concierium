@@ -289,22 +289,28 @@
           </div>
         </div>
       </section>
+
+            <!-- CALENDARIO (MOVER ADENTRO DE MAIN) -->
+      <section id="calendario" class="section" style="display:none">
+        <h2>Mi calendario</h2>
+        <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn" id="calPrev">◀</button>
+          <div id="calTitle" style="font-weight:700"></div>
+          <button class="btn" id="calNext">▶</button>
+          <button class="btn" id="calToday" style="margin-left:auto">Hoy</button>
+        </div>
+        <div class="card">
+          <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
+        </div>
+      </section>
     </main>
   </div>
 
   <div id="toast"></div>
-<section id="calendario" class="section" style="display:none">
-  <h2>Mi calendario</h2>
-  <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <button class="btn" id="calPrev">◀</button>
-    <div id="calTitle" style="font-weight:700"></div>
-    <button class="btn" id="calNext">▶</button>
-    <button class="btn" id="calToday" style="margin-left:auto">Hoy</button>
+
+    </main>
   </div>
-  <div class="card">
-    <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
-  </div>
-</section>
+
 
   <script>
     // ===== Helpers básicos
