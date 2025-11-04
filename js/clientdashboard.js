@@ -1,49 +1,13 @@
-// public/js/clientdashboard.js  (ESM, archivo único)
+// public/js/clientdashboard.js  (ESM, drop-in robusto con diagnóstico)
 const token = localStorage.getItem('token') || '';
 if (!token) {
-  // Guard mínimo: exige token para ver el cliente
   location.replace('/login.html');
 }
 
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
 
-/* =========================
-   HTTP helpers (JSON / upload)
-========================= */
-const authHeaders = () => ({ Authorization: 'Bearer ' + token });
-
-const fget = (url) =>
-  fetch(url, { headers: authHeaders() })
-    .then(async r => {
-      if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
-      return r.json();
-    })
-    .catch(e => ({ ok:false, error:String(e.message||e) }));
-
-const fpost = (url, body) =>
-  fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...authHeaders() },
-    body: JSON.stringify(body)
-  })
-  .then(async r => {
-    if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
-    return r.json();
-  })
-  .catch(e => ({ ok:false, error:String(e.message||e) }));
-
-const fupload = (url, formData) =>
-  fetch(url, { method: 'POST', headers: authHeaders(), body: formData })
-    .then(async r => {
-      if (!r.ok) throw new Error(await r.text().catch(()=>r.statusText));
-      return r.json();
-    })
-    .catch(e => ({ ok:false, error:String(e.message||e) }));
-
-/* =========================
-   Toast
-========================= */
+// ====== UI helpers ======
 function toast(msg, type='warn', ms=4200){
   const t = $('#toast'); if(!t) return;
   t.textContent = msg;
@@ -53,59 +17,6 @@ function toast(msg, type='warn', ms=4200){
   t._to = setTimeout(()=> t.style.display='none', ms);
 }
 
-/* =========================
-   Estado (catálogos públicos)
-========================= */
-const REF = { destinations: [], services: [] };
-
-async function prefetchRefs(){
-  const [dres, sres] = await Promise.allSettled([
-    fget('/.netlify/functions/public-destinations'),
-    fget('/.netlify/functions/public-services'),
-  ]);
-
-  const dests = (dres.value?.items || []).filter(x=>x.is_active);
-  const servs = (sres.value?.items || []).filter(x=>x.is_active);
-
-  REF.destinations = dests;
-  REF.services     = servs;
-
-  // Selects: crear nueva
-  const selDestN = $('#selDestinationNew');
-  if (selDestN) {
-    selDestN.innerHTML = `<option value="">— selecciona —</option>` +
-      dests
-        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-  }
-  const selServN = $('#selServiceNew');
-  if (selServN) {
-    selServN.innerHTML = `<option value="">— (opcional) —</option>` +
-      servs
-        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
-  }
-
-  // Selects: editar
-  const selDestE = $('#selDestinationEdit');
-  if (selDestE) {
-    selDestE.innerHTML = `<option value="">— sin destino —</option>` +
-      dests
-        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-  }
-  const selServE = $('#selServiceEdit');
-  if (selServE) {
-    selServE.innerHTML = `<option value="">— (opcional) —</option>` +
-      servs
-        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
-  }
-}
-
-/* =========================
-   UI helpers + Router
-========================= */
 function showSectionById(id){
   const sections = $$('.section');
   sections.forEach(s => s.style.display = (s.id === id ? 'block' : 'none'));
@@ -123,33 +34,175 @@ function parseHash(){
   return { path, params };
 }
 
-/* =========================
-   HOME (resumen del cliente)
-========================= */
+// ====== HTTP helpers ======
+const authHeaders = () => ({ Authorization: 'Bearer ' + token });
+async function asJson(r){
+  let text = await r.text();
+  try { return JSON.parse(text || '{}'); } catch { return { ok:false, error:text || r.statusText }; }
+}
+const fget = async (url) => {
+  try{
+    const r = await fetch(url, { headers: authHeaders() });
+    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
+    return await asJson(r);
+  }catch(e){ return { ok:false, error:String(e) }; }
+};
+const fpost = async (url, body) => {
+  try{
+    const r = await fetch(url, {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json', ...authHeaders() },
+      body: JSON.stringify(body)
+    });
+    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
+    return await asJson(r);
+  }catch(e){ return { ok:false, error:String(e) }; }
+};
+const fupload = async (url, formData) => {
+  try{
+    const r = await fetch(url, { method:'POST', headers: authHeaders(), body: formData });
+    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
+    return await asJson(r);
+  }catch(e){ return { ok:false, error:String(e) }; }
+};
+
+// ====== Endpoints esperados (cliente/públicos) ======
+const EP = {
+  publicDest: '/.netlify/functions/public-destinations',
+  publicServ: '/.netlify/functions/public-services',
+  dash:       '/.netlify/functions/client-dashboard',
+  list:       '/.netlify/functions/client-requests-list',
+  upsert:     '/.netlify/functions/client-requests-upsert',
+  status:     '/.netlify/functions/client-requests-status',
+  attachList: '/.netlify/functions/client-attachments-list',
+  upload:     '/.netlify/functions/upload',
+  // (opcionales de depuración — algunos ya los tienes)
+  ping:       '/.netlify/functions/_db-ping'
+};
+
+// ====== Diagnóstico de endpoints ======
+let HEALTH = {
+  publicDest:false, publicServ:false, dash:false, list:false, upsert:false, status:false, attachList:false, upload:false, ping:null
+};
+async function healthCheck(){
+  const tests = [
+    ['publicDest', EP.publicDest, 'GET'],
+    ['publicServ', EP.publicServ, 'GET'],
+    ['dash',       EP.dash,       'GET'],
+    ['list',       EP.list,       'GET'],
+    ['upsert',     EP.upsert,     'POST', { service_kind:'tour' }], // body mínimo válido
+    ['status',     EP.status,     'POST', { id:'00000000-0000-0000-0000-000000000000', to_status:'discarded' }],
+    ['attachList', EP.attachList, 'GET?request_id=fake'],
+    ['upload',     EP.upload,     'HEAD'], // HEAD puede no estar — si falla, marcamos null
+    ['ping',       EP.ping,       'GET', null, true]
+  ];
+
+  const out = [];
+  for (const [key, url, method, body, optional] of tests){
+    try{
+      let res;
+      if (method === 'GET'){
+        res = await fetch(url, { headers:authHeaders() });
+      } else if (method === 'GET?request_id=fake'){
+        res = await fetch(url + '?request_id=00000000-0000-0000-0000-000000000000', { headers:authHeaders() });
+      } else if (method === 'POST'){
+        res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body:JSON.stringify(body||{}) });
+      } else if (method === 'HEAD'){
+        res = await fetch(url, { method:'HEAD', headers:authHeaders() });
+      }
+      const okish = res && (res.ok || res.status===400 || res.status===401 || res.status===403 || res.status===404);
+      HEALTH[key] = okish ? (res.ok) : false;
+      out.push([key, res.status, res.statusText]);
+    }catch(e){
+      HEALTH[key] = optional ? null : false;
+      out.push([key, 'ERR', String(e)]);
+    }
+  }
+
+  // UI de diagnóstico (no requiere cambios en tu HTML; reusa Home)
+  const chips = $('#chipsMine');
+  if (chips){
+    const mk = (k, good, statusTxt) => {
+      const span = document.createElement('span');
+      span.className = 'chip';
+      span.textContent = `${k}: ${statusTxt}`;
+      span.style.color = good===true ? '#19c37d' : (good===null ? '#f5a524' : '#ef4444');
+      return span;
+    };
+    chips.innerHTML = '';
+    for (const [k, st, txt] of out){
+      const good = HEALTH[k];
+      chips.appendChild(mk(k, good, `${st}`));
+    }
+  }
+
+  // Mensajes guía
+  const missing = Object.entries(HEALTH).filter(([k,v])=> v===false && k!=='ping').map(([k])=>k);
+  if (missing.length){
+    console.warn('Faltan endpoints cliente:', missing);
+    toast('Faltan endpoints del cliente: ' + missing.join(', '), 'warn', 6000);
+  }
+}
+
+// ====== Catálogos ======
+const REF = { destinations: [], services: [] };
+
+async function prefetchRefs(){
+  const [dres, sres] = await Promise.all([ fget(EP.publicDest), fget(EP.publicServ) ]);
+
+  if (!dres?.items) {
+    REF.destinations = [];
+    console.error('public-destinations falló:', dres?.error);
+  } else REF.destinations = dres.items.filter(x=>x.is_active!==false);
+
+  if (!sres?.items) {
+    REF.services = [];
+    console.error('public-services falló:', sres?.error);
+  } else REF.services = sres.items.filter(x=>x.is_active!==false);
+
+  // Selects: crear nueva
+  const selDestN = $('#selDestinationNew');
+  if (selDestN) {
+    selDestN.innerHTML = `<option value="">— selecciona —</option>` +
+      REF.destinations
+        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
+        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
+  }
+  const selServN = $('#selServiceNew');
+  if (selServN) {
+    selServN.innerHTML = `<option value="">— (opcional) —</option>` +
+      REF.services
+        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
+        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
+  }
+
+  // Selects: editar
+  const selDestE = $('#selDestinationEdit');
+  if (selDestE) {
+    selDestE.innerHTML = `<option value="">— sin destino —</option>` +
+      REF.destinations
+        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
+        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
+  }
+  const selServE = $('#selServiceEdit');
+  if (selServE) {
+    selServE.innerHTML = `<option value="">— (opcional) —</option>` +
+      REF.services
+        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
+        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
+  }
+}
+
+// ====== Home (resumen) ======
 async function loadClientHome(){
-  const data = await fget('/.netlify/functions/client-dashboard');
+  const data = await fget(EP.dash);
   if(!data || data.ok===false){
     $('#kpiMine')?.replaceChildren(document.createTextNode('—'));
-    $('#chipsMine')?.replaceChildren();
-    $('#tblMyRecent')?.replaceChildren();
-    toast(data?.error || 'No se pudo cargar tu dashboard', 'warn');
+    const tb = $('#tblMyRecent'); if (tb) tb.innerHTML = `<tr><td colspan="6" class="muted">${data?.error || 'Dashboard no disponible'}</td></tr>`;
+    console.error('client-dashboard:', data?.error);
     return;
   }
   $('#kpiMine').textContent = data.total ?? 0;
-
-  const chips = $('#chipsMine'); if (chips) {
-    chips.innerHTML = '';
-    const palette = { new:'', curation:'warn', proposal_sent:'ok', confirmed:'ok', closed:'', discarded:'err' };
-    (data.por_estado||[]).forEach(r=>{
-      const span = document.createElement('span');
-      span.textContent = `${r.status}: ${r.total}`;
-      span.className = 'chip';
-      if(palette[r.status]==='ok')   span.style.color='#19c37d';
-      if(palette[r.status]==='warn') span.style.color='#f5a524';
-      if(palette[r.status]==='err')  span.style.color='#ef4444';
-      chips.appendChild(span);
-    });
-  }
 
   const tb = $('#tblMyRecent'); if (tb) {
     tb.innerHTML='';
@@ -167,50 +220,54 @@ async function loadClientHome(){
 }
 $('#btnRefreshClient')?.addEventListener('click', loadClientHome);
 
-/* =========================
-   NUEVA SOLICITUD
-========================= */
+// ====== Nueva solicitud ======
 $('#formNewReq')?.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  if (HEALTH.upsert === false) {
+    toast('Endpoint de creación no disponible (.functions/client-requests-upsert)', 'err'); 
+    return;
+  }
   const fd = new FormData(e.target);
   const body = Object.fromEntries(fd.entries());
+
   // Normaliza
   body.guests = body.guests ? +body.guests : null;
   body.budget_usd = body.budget_usd ? +body.budget_usd : null;
   body.destination_id = body.destination_id || null;
-  body.catalog_id     = body.catalog_id || null; // service seleccionado
-  body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
+  body.catalog_id     = body.catalog_id || null;
+  body.interests      = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
+
   if(!body.service_kind){ toast('Selecciona un tipo de servicio','warn'); return; }
 
-  const r = await fpost('/.netlify/functions/client-requests-upsert', body);
+  const r = await fpost(EP.upsert, body);
   $('#msgNewReq').textContent = r.ok ? 'Solicitud creada' : (r.error||'Error');
   if(r.ok){
     toast('Solicitud enviada','ok',2200);
     e.target.reset();
     location.hash = '#mis-solicitudes';
     await loadMyRequests();
+  } else {
+    console.error('client-requests-upsert:', r.error);
   }
 });
 
-/* =========================
-   MIS SOLICITUDES (lista)
-========================= */
+// ====== Lista de mis solicitudes ======
 async function loadMyRequests(){
   const st = $('#fltStatusMyReq')?.value || '';
-  const url = '/.netlify/functions/client-requests-list' + (st?`?status=${encodeURIComponent(st)}`:'');
+  const url = EP.list + (st?`?status=${encodeURIComponent(st)}`:'');
   const d = await fget(url);
   const tb = $('#tblMyReq'); if(!tb) return;
   tb.innerHTML='';
-  if(d?.error || d?.ok===false){ tb.innerHTML=`<tr><td colspan="6" class="muted">${d.error||'Error'}</td></tr>`; return; }
+  if(d?.error || d?.ok===false){ tb.innerHTML=`<tr><td colspan="6" class="muted">${d.error||'No disponible'}</td></tr>`; console.error('client-requests-list:', d?.error); return; }
   (d.items||[]).forEach(it=>{
     const tr=document.createElement('tr');
     tr.innerHTML = `
       <td>${it.id}</td>
-      <td>${it.servicio}</td>
-      <td>${it.destino}</td>
+      <td>${it.servicio||'—'}</td>
+      <td>${it.destino||'—'}</td>
       <td>${it.fecha || (it.start_date? it.start_date : '—')}</td>
-      <td>${it.estado}</td>
-      <td style="display:flex;gap:6px">
+      <td>${it.estado||'—'}</td>
+      <td style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btnOpen" data-id="${it.id}">Abrir</button>
         ${it.estado!=='discarded' && it.estado!=='closed' ? `<button class="btn btnCancel" data-id="${it.id}">Cancelar</button>` : ''}
       </td>
@@ -223,10 +280,11 @@ async function loadMyRequests(){
   });
   tb.querySelectorAll('.btnCancel').forEach(btn=>{
     btn.onclick = async ()=>{
+      if (HEALTH.status === false) { toast('Endpoint de cambio de estado no disponible', 'err'); return; }
       const id = btn.dataset.id;
       if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-      const r = await fpost('/.netlify/functions/client-requests-status', { id, to_status:'discarded' });
-      if(!r.ok){ toast(r.error||'Error','err'); return; }
+      const r = await fpost(EP.status, { id, to_status:'discarded' });
+      if(!r.ok){ toast(r.error||'Error','err'); console.error('client-requests-status:', r.error); return; }
       toast('Solicitud cancelada','ok',2200);
       await loadMyRequests();
       await loadClientHome();
@@ -237,27 +295,23 @@ async function loadMyRequests(){
 }
 $('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
 
-/* =========================
-   SOLICITUD - edición/adjuntos
-========================= */
+// ====== Editar solicitud + adjuntos ======
 async function openMyRequestEdit(id){
   await prefetchRefs();
 
-  // Trae lista y busca (si tienes endpoint get-by-id, cámbialo aquí)
-  const d = await fget('/.netlify/functions/client-requests-list');
+  const d = await fget(EP.list);
   const item = (d.items||[]).find(x=> x.id===id);
   if(!item){ toast('Solicitud no encontrada','err'); location.hash='#mis-solicitudes'; return; }
 
-  // Prefill edición básica (solo campos de cliente)
   const f = $('#formReqEdit');
   if (f) {
     f.id.value = item.id;
-    // selects
+
     const dest = REF.destinations.find(dd => dd.id===item.destination_id) || REF.destinations.find(dd => dd.name===item.destino);
     const serv = REF.services.find(ss => ss.id===item.catalog_id)         || REF.services.find(ss => ss.name===item.servicio);
     $('#selDestinationEdit').value = dest ? dest.id : '';
     $('#selServiceEdit').value     = serv ? serv.id : '';
-    // inputs comunes
+
     f.service_kind.value = item.service_kind || item.servicio_kind || '';
     f.start_date.value   = item.start_date || '';
     f.end_date.value     = item.end_date || '';
@@ -268,7 +322,6 @@ async function openMyRequestEdit(id){
     f.notes.value        = item.notes || '';
   }
 
-  // Resumen
   $('#reqPreview').innerHTML = `
     <div><b>Folio:</b> ${item.id}</div>
     <div><b>Servicio:</b> ${item.servicio||'—'} (${item.service_kind||'—'})</div>
@@ -278,59 +331,57 @@ async function openMyRequestEdit(id){
     <div><b>Estado:</b> ${item.estado}</div>
   `;
 
-  // Adjuntos: listar
+  // Adjuntos
   await loadAttachmentsList(item.id);
 
-  // Sincroniza request_id del form de subida
   const up = $('#uploadRequestId');
   if (up) up.value = item.id;
 
   showSectionById('solicitud-edit');
 }
 
-// Guardar cambios del cliente sobre su solicitud
 $('#formReqEdit')?.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  if (HEALTH.upsert === false) { toast('Endpoint de actualización no disponible', 'err'); return; }
   const fd = new FormData(e.target);
   const body = Object.fromEntries(fd.entries());
-  // normaliza
   body.guests = body.guests ? +body.guests : null;
   body.budget_usd = body.budget_usd ? +body.budget_usd : null;
   body.destination_id = body.destination_id || null;
   body.catalog_id     = body.catalog_id || null;
   body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
 
-  const r = await fpost('/.netlify/functions/client-requests-upsert', body);
+  const r = await fpost(EP.upsert, body);
   $('#msgReqEdit').textContent = r.ok ? 'Cambios guardados' : (r.error||'Error');
   if(r.ok){
     toast('Solicitud actualizada','ok',2200);
     await loadMyRequests();
     await loadClientHome();
+  } else {
+    console.error('client-requests-upsert (edit):', r.error);
   }
 });
 
-// Cancelar desde la vista de edición
 $('#btnCancelReq')?.addEventListener('click', async ()=>{
   const id = $('#formReqEdit')?.id?.value;
   if(!id) return;
+  if (HEALTH.status === false) { toast('Endpoint de cambio de estado no disponible', 'err'); return; }
   if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-  const r = await fpost('/.netlify/functions/client-requests-status', { id, to_status:'discarded' });
-  if(!r.ok){ toast(r.error||'Error','err'); return; }
+  const r = await fpost(EP.status, { id, to_status:'discarded' });
+  if(!r.ok){ toast(r.error||'Error','err'); console.error('client-requests-status:', r.error); return; }
   toast('Solicitud cancelada','ok',2200);
   location.hash = '#mis-solicitudes';
   await loadMyRequests();
   await loadClientHome();
 });
 
-/* =========================
-   Adjuntos del cliente
-========================= */
+// Adjuntos
 async function loadAttachmentsList(request_id){
   const ul = $('#attachmentsList'); if(!ul) return;
+  if (HEALTH.attachList === false) { ul.innerHTML = `<li class="muted">Endpoint de adjuntos no disponible</li>`; return; }
   ul.innerHTML = '<li class="muted">Cargando…</li>';
-  const d = await fget('/.netlify/functions/client-attachments-list?request_id='+encodeURIComponent(request_id));
-  if(d?.error || d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'Error'}</li>`; return; }
-
+  const d = await fget(EP.attachList + '?request_id=' + encodeURIComponent(request_id));
+  if(d?.error || d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'Error'}</li>`; console.error('client-attachments-list:', d?.error); return; }
   if(!(d.items||[]).length){ ul.innerHTML = `<li class="muted">Sin archivos</li>`; return; }
   ul.innerHTML = '';
   (d.items||[]).forEach(a=>{
@@ -343,14 +394,13 @@ async function loadAttachmentsList(request_id){
   });
 }
 
-// subida (FormData: file + request_id)
 $('#formUpload')?.addEventListener('submit', async (e)=>{
   e.preventDefault();
+  if (HEALTH.upload === false) { toast('Endpoint de subida no disponible', 'err'); return; }
   const fd = new FormData(e.target);
   const file = fd.get('file');
   const request_id = fd.get('request_id');
   if(!file || !request_id){ toast('Selecciona un archivo y una solicitud','warn'); return; }
-  // Validación ligera por UI
   const okType = /^(application\/pdf|image\/png|image\/jpe?g)$/i.test(file.type);
   if(!okType){ toast('Tipo no permitido (solo PDF/JPG/PNG)','warn'); return; }
   if(file.size > 10*1024*1024){ toast('Archivo > 10MB','warn'); return; }
@@ -359,30 +409,32 @@ $('#formUpload')?.addEventListener('submit', async (e)=>{
   upfd.append('file', file);
   upfd.append('request_id', request_id);
 
-  const r = await fupload('/.netlify/functions/upload', upfd);
+  const r = await fupload(EP.upload, upfd);
   $('#msgUpload').textContent = r.ok ? 'Archivo subido' : (r.error||'Error');
   if(r.ok){
     toast('Adjunto subido','ok',2200);
     e.target.reset();
     await loadAttachmentsList(request_id);
+  } else {
+    console.error('upload:', r.error);
   }
 });
 
-/* =========================
-   Router (cliente)
-========================= */
+// ====== Router ======
 async function router(){
   const { path, params } = parseHash();
   setNavFromHash();
 
   if (path === '#home' || path === '#') {
     showSectionById('home');
+    await healthCheck();   // << muestra estado en Home
     await loadClientHome();
     return;
   }
   if (path === '#nueva') {
     showSectionById('nueva');
     await prefetchRefs();
+    if (HEALTH.upsert === false) toast('Crear solicitud no disponible (falta función)', 'warn');
     return;
   }
   if (path === '#mis-solicitudes') {
@@ -397,23 +449,19 @@ async function router(){
     return;
   }
 
-  // fallback
   showSectionById('home');
+  await healthCheck();
   await loadClientHome();
 }
 window.addEventListener('hashchange', router);
 
-/* =========================
-   Logout
-========================= */
+// ====== Logout ======
 $('#btnLogout')?.addEventListener('click', ()=>{
   localStorage.clear();
   location.replace('/login.html');
 });
 
-/* =========================
-   Arranque
-========================= */
+// ====== Arranque ======
 (async ()=>{
   if(!location.hash) location.hash = '#home';
   await prefetchRefs();
