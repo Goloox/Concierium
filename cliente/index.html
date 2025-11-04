@@ -1,150 +1,330 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Concierium | Cliente</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
-    :root{--bg:#0c0c0f;--panel:#121218;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--radius:16px;--shadow:0 12px 30px rgba(0,0,0,.35)}
+    :root{
+      --bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;
+      --ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)
+    }
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),var(--bg);display:grid;grid-template-rows:auto 1fr}
-    .topbar{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px;object-fit:contain;border-radius:8px}.brand b{letter-spacing:.4px}.pill{padding:6px 10px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.12);color:var(--muted)}
-    .top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
-    .layout{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px)} @media (max-width:980px){.layout{grid-template-columns:1fr}}
-    .sidebar{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
-    .side-title{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:12px 10px}
-    .side-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
-    .side-item:hover{background:rgba(255,255,255,.06)} .side-item.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
-    .main{padding:24px}
-    .greet{display:grid;gap:6px;margin-bottom:16px}.greet .hello{font-size:22px;font-weight:700}.greet .sub{color:var(--muted);font-size:14px}
-    .grid{display:grid;gap:16px;grid-template-columns: repeat(12, minmax(0,1fr))}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
-    .col-4{grid-column: span 4}.col-6{grid-column: span 6}.col-12{grid-column: span 12}
-    @media (max-width:1200px){ .col-6{grid-column: span 12} .col-4{grid-column: span 6}} @media (max-width:780px){ .col-4{grid-column: span 12} }
-    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
-    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:12px 10px}
-    .ok{color:var(--ok)} .warn{color:var(--warn)} .err{color:var(--err)}
+    body{
+      margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
+                 radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
+      display:grid;grid-template-rows:auto 1fr
+    }
+    header{
+      position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
+      padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);
+      border-bottom:1px solid rgba(255,255,255,.06)
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand img{width:28px;height:28px}
+    .brand b{letter-spacing:.4px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));
+      color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px
+    }
+    .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
+    aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
+    .nav{display:grid;gap:8px}
+    .nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
+    .nav a:hover{background:rgba(255,255,255,.06)}
+    .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
+    main{padding:20px}
+    h2{margin:10px 0 12px}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
+      border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)
+    }
+    .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    @media (max-width:1100px){ .col-4,.col-6,.col-8{grid-column:span 12} }
+
+    label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
+    input,select,textarea{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:#0f1018;color:var(--text)
+    }
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
+    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)}
+    tbody td{padding:10px}
+    .muted{color:var(--muted)}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
+
+    #toast{
+      position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
+      background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999
+    }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><img src="/img/logo.png" alt="Concierium"/><b>Concierium</b><span class="pill">Cliente</span></div>
-    <div class="top-actions">
-      <button class="btn" id="btnNew">Nueva solicitud</button>
+  <header>
+    <div class="brand"><img src="/img/logo.png" alt=""/><b>Concierium</b><span style="margin-left:8px;color:#9aa3b2">Cliente</span></div>
+    <div style="margin-left:auto;display:flex;gap:10px">
       <button class="btn" id="btnLogout">Salir</button>
     </div>
   </header>
 
-  <div class="layout">
-    <aside class="sidebar">
-      <div class="side-title">Navegación</div>
-      <a class="side-item active" href="#">Home</a>
-      <a class="side-item" href="#" id="linkRequests">Mis solicitudes</a>
-      <a class="side-item" href="#" id="linkExplore">Explorar servicios</a>
+  <div class="wrap">
+    <aside>
+      <nav class="nav">
+        <a href="#home" class="active">Home</a>
+        <a href="#nueva">Nueva solicitud</a>
+        <a href="#mis-solicitudes">Mis solicitudes</a>
+      </nav>
     </aside>
 
-    <main class="main">
-      <section class="greet">
-        <div class="hello">Hola, <span id="userName">Cliente</span> 👋</div>
-        <div class="sub" id="subtitle">Cargando datos...</div>
+    <main>
+      <!-- HOME -->
+      <section id="home" class="section">
+        <h2>Resumen</h2>
+        <div class="grid">
+          <div class="card col-12">
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+              <div><b>Total mis solicitudes:</b> <span id="kpiMine">—</span></div>
+              <div id="chipsMine" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+              <button class="btn" id="btnRefreshClient" style="margin-left:auto">Refrescar</button>
+            </div>
+          </div>
+          <div class="card col-12">
+            <h3>Recientes</h3>
+            <div style="overflow:auto">
+              <table>
+                <thead>
+                  <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr>
+                </thead>
+                <tbody id="tblMyRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <section class="grid">
-        <div class="card col-4">
-          <h3>Solicitudes activas</h3>
-          <div style="font-size:28px;font-weight:700" id="kpiActive">—</div>
-          <div style="color:#9aa3b2" id="kpiActiveNote">—</div>
+      <!-- NUEVA SOLICITUD -->
+      <section id="nueva" class="section" style="display:none">
+        <h2>Nueva solicitud</h2>
+        <div class="grid">
+          <div class="card col-8">
+            <form id="formNewReq">
+              <div class="grid">
+                <div class="col-6">
+                  <label>Tipo de servicio</label>
+                  <select name="service_kind" id="selKindNew" required>
+                    <option value="">— selecciona —</option>
+                    <option value="lodging">lodging</option>
+                    <option value="tour">tour</option>
+                    <option value="dining">dining</option>
+                    <option value="vip">vip</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Destino</label>
+                  <select name="destination_id" id="selDestinationNew">
+                    <option value="">— selecciona —</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Servicio (catálogo) — opcional</label>
+                  <select name="catalog_id" id="selServiceNew">
+                    <option value="">— (opcional) —</option>
+                  </select>
+                </div>
+                <div class="col-3">
+                  <label>Desde</label>
+                  <input type="date" name="start_date">
+                </div>
+                <div class="col-3">
+                  <label>Hasta</label>
+                  <input type="date" name="end_date">
+                </div>
+                <div class="col-3">
+                  <label>Huéspedes</label>
+                  <input type="number" name="guests" min="1">
+                </div>
+                <div class="col-3">
+                  <label>Presupuesto (USD)</label>
+                  <input type="number" name="budget_usd" step="0.01" min="0">
+                </div>
+                <div class="col-12">
+                  <label>Preferencias alimentarias (opcional)</label>
+                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
+                </div>
+                <div class="col-12">
+                  <label>Intereses (opcional, separa por comas)</label>
+                  <input name="interests" placeholder="playa, cultura, aventura…">
+                </div>
+                <div class="col-12">
+                  <label>Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                </div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+                <button class="btn" type="submit">Enviar solicitud</button>
+                <span id="msgNewReq" class="muted"></span>
+              </div>
+            </form>
+          </div>
+          <div class="card col-4">
+            <h3>Ayuda</h3>
+            <p class="muted">Selecciona tipo, destino y (opcional) un servicio del catálogo. Puedes indicar fechas, presupuesto y notas.</p>
+          </div>
         </div>
+      </section>
 
-        <div class="card col-4">
-          <h3>Último estado</h3>
-          <div style="font-size:18px;font-weight:700" id="kpiLastStatus">—</div>
-          <div style="color:#9aa3b2" id="kpiLastStatusNote">—</div>
+      <!-- MIS SOLICITUDES -->
+      <section id="mis-solicitudes" class="section" style="display:none">
+        <h2>Mis solicitudes</h2>
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label class="muted">Filtrar estado</label>
+            <select id="fltStatusMyReq">
+              <option value="">(todos)</option>
+              <option>new</option><option>curation</option><option>proposal_sent</option>
+              <option>confirmed</option><option>closed</option><option>discarded</option>
+            </select>
+            <button class="btn" id="btnLoadMyReq">Cargar</button>
+          </div>
         </div>
-
-        <div class="card col-4">
-          <h3>Recomendado</h3>
-          <div style="font-size:18px;font-weight:700" id="kpiReco">—</div>
-          <div style="color:#9aa3b2">Basado en tu actividad</div>
-        </div>
-
-        <div class="card col-12">
-          <h3>Mis solicitudes (últimas 5)</h3>
+        <div class="card">
           <div style="overflow:auto">
             <table>
-              <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead>
-              <tbody id="tblRequests"><tr><td colspan="6">Cargando…</td></tr></tbody>
+              <thead>
+                <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr>
+              </thead>
+              <tbody id="tblMyReq"><tr><td colspan="6">Cargando…</td></tr></tbody>
             </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SOLICITUD EDIT -->
+      <section id="solicitud-edit" class="section" style="display:none">
+        <h2>Editar solicitud</h2>
+
+        <div class="card" style="margin-bottom:12px;display:flex;gap:10px">
+          <a class="btn" href="#mis-solicitudes">← Volver a Mis solicitudes</a>
+          <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
+        </div>
+
+        <div class="grid">
+          <div class="card col-6">
+            <h3>Formulario</h3>
+            <form id="formReqEdit">
+              <input type="hidden" name="id">
+              <div class="grid">
+                <div class="col-6">
+                  <label>Tipo de servicio</label>
+                  <select name="service_kind" required>
+                    <option value="lodging">lodging</option>
+                    <option value="tour">tour</option>
+                    <option value="dining">dining</option>
+                    <option value="vip">vip</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Destino</label>
+                  <select name="destination_id" id="selDestinationEdit">
+                    <option value="">— sin destino —</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label>Servicio (catálogo) — opcional</label>
+                  <select name="catalog_id" id="selServiceEdit">
+                    <option value="">— (opcional) —</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Desde</label>
+                  <input type="date" name="start_date">
+                </div>
+                <div class="col-6">
+                  <label>Hasta</label>
+                  <input type="date" name="end_date">
+                </div>
+                <div class="col-6">
+                  <label>Huéspedes</label>
+                  <input type="number" name="guests" min="1">
+                </div>
+                <div class="col-6">
+                  <label>Presupuesto (USD)</label>
+                  <input type="number" name="budget_usd" step="0.01" min="0">
+                </div>
+                <div class="col-12">
+                  <label>Preferencias alimentarias</label>
+                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
+                </div>
+                <div class="col-12">
+                  <label>Intereses (separa por comas)</label>
+                  <input name="interests" placeholder="playa, cultura, aventura…">
+                </div>
+                <div class="col-12">
+                  <label>Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                </div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
+                <button class="btn" type="submit">Guardar cambios</button>
+                <span id="msgReqEdit" class="muted"></span>
+              </div>
+            </form>
+          </div>
+
+          <div class="card col-6">
+            <h3>Resumen</h3>
+            <div id="reqPreview" class="muted">—</div>
+
+            <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:16px 0"/>
+
+            <h3>Adjuntos</h3>
+            <ul id="attachmentsList" style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
+              <li class="muted">—</li>
+            </ul>
+
+            <form id="formUpload" style="margin-top:12px">
+              <input type="hidden" name="request_id" id="uploadRequestId">
+              <label>Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
+              <input type="file" name="file" accept="application/pdf,image/png,image/jpeg">
+              <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+                <button class="btn" type="submit">Subir</button>
+                <span id="msgUpload" class="muted"></span>
+              </div>
+            </form>
           </div>
         </div>
       </section>
     </main>
   </div>
 
+  <div id="toast"></div>
+
+  <!-- Guard de autenticación si lo usas también en cliente -->
   <script src="/js/auth-guard.js"></script>
+  <!-- Lógica del cliente -->
+  <script src="/js/clientdashboard.js" type="module"></script>
+
+  <!-- Sincroniza el request_id del form de subida con el ID cargado en el editor -->
   <script>
-    const $ = (s,el=document)=>el.querySelector(s);
-    let user=null; try{ user=JSON.parse(localStorage.getItem('user')||'null'); }catch{}
-    const token = localStorage.getItem('token')||'';
-    $('#userName').textContent = (user?.full_name||'Cliente').split(' ')[0];
-
-    const STATUS_CLS = { new:'', curation:'warn', proposal_sent:'ok', confirmed:'ok', closed:'', discarded:'err' };
-
-    async function loadDashboard(){
-      try{
-        const res = await fetch('/.netlify/functions/client-dashboard', {
-          headers:{ Authorization:'Bearer '+token }
-        });
-        const data = await res.json();
-
-        if(!data.ok) throw new Error(data.error||'Error');
-
-        // KPIs
-        $('#kpiActive').textContent = data.kpis.activas;
-        $('#kpiActiveNote').textContent = data.kpis.activas>0 ? 'Tienes solicitudes en curso' : 'Sin actividad reciente';
-
-        const st = data.kpis.ultimo_estado;
-        $('#kpiLastStatus').textContent = st ? st : '—';
-        $('#kpiLastStatusNote').textContent = data.kpis.ultimo_id ? `Última: ${data.kpis.ultimo_id}` : '—';
-
-        $('#kpiReco').textContent = data.recomendado || '—';
-        $('#subtitle').textContent = 'Todo listo ✨';
-
-        // Tabla
-        const tb = $('#tblRequests'); tb.innerHTML='';
-        if(!data.solicitudes.length){
-          tb.innerHTML = '<tr><td colspan="6">No tienes solicitudes aún</td></tr>';
-        }else{
-          data.solicitudes.forEach(r=>{
-            const cls = STATUS_CLS[r.estado]||'';
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${r.id}</td>
-              <td>${r.servicio}</td>
-              <td>${r.destino}</td>
-              <td>${r.fecha_inicio}</td>
-              <td>${r.fecha_fin}</td>
-              <td><span class="${cls}">${r.estado}</span></td>
-            `;
-            tb.appendChild(tr);
-          });
-        }
-      }catch(e){
-        $('#subtitle').textContent = 'No fue posible cargar los datos';
-        console.error(e);
+    function syncUploadRequestId(){
+      const f = document.querySelector('#formReqEdit');
+      const up = document.querySelector('#uploadRequestId');
+      if(f && up && f.elements.id && f.elements.id.value){
+        up.value = f.elements.id.value;
       }
     }
-
-    // Navegación simple (ajusta a tus rutas reales)
-    document.getElementById('btnNew').onclick = ()=> alert('Ir a /cliente/nueva-solicitud');
-    document.getElementById('linkRequests').onclick = (e)=>{e.preventDefault(); alert('Ir a /cliente/solicitudes');}
-    document.getElementById('linkExplore').onclick = (e)=>{e.preventDefault(); alert('Ir a /cliente/explorar');}
-    document.getElementById('btnLogout').onclick = ()=>{ localStorage.clear(); location.replace('/login.html'); };
-
-    loadDashboard();
+    window.addEventListener('hashchange', ()=>{
+      if (location.hash.startsWith('#solicitudes/edit')) {
+        // da un pequeño tiempo a que el JS cargue el form y luego sincroniza
+        setTimeout(syncUploadRequestId, 200);
+      }
+    });
+    document.addEventListener('DOMContentLoaded', syncUploadRequestId);
   </script>
 </body>
 </html>
