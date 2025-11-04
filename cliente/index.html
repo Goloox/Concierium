@@ -304,27 +304,7 @@
 
   <div id="toast"></div>
 
-  <!-- Guard de autenticación si lo usas también en cliente -->
-  <script src="/js/auth-guard.js"></script>
-  <!-- Lógica del cliente -->
-  <script src="/js/clientdashboard.js" type="module"></script>
-
-  <!-- Sincroniza el request_id del form de subida con el ID cargado en el editor -->
-  <script>
-    function syncUploadRequestId(){
-      const f = document.querySelector('#formReqEdit');
-      const up = document.querySelector('#uploadRequestId');
-      if(f && up && f.elements.id && f.elements.id.value){
-        up.value = f.elements.id.value;
-      }
-    }
-    window.addEventListener('hashchange', ()=>{
-      if (location.hash.startsWith('#solicitudes/edit')) {
-        // da un pequeño tiempo a que el JS cargue el form y luego sincroniza
-        setTimeout(syncUploadRequestId, 200);
-      }
-    });
-    document.addEventListener('DOMContentLoaded', syncUploadRequestId);
-  </script>
+  <!-- ÚNICO JS -->
+  <script type="module" src="/public/js/clientdashboard.js"></script>
 </body>
 </html>
