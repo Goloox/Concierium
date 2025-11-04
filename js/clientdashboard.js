@@ -1,469 +1,317 @@
-// public/js/clientdashboard.js  (ESM, drop-in robusto con diagnóstico)
-const token = localStorage.getItem('token') || '';
-if (!token) {
-  location.replace('/login.html');
+// netlify/functions/api.js  (ESM, una sola función que maneja TODO)
+// Requiere: DATABASE_URL (o PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGPORT/PGSSL), JWT_SECRET, DB_SCHEMA (opcional)
+import { Client } from "pg";
+import jwt from "jsonwebtoken";
+
+const SCHEMA = process.env.DB_SCHEMA || "concierium";
+
+const J = (status, body) => ({
+  statusCode: status,
+  headers: { "content-type": "application/json; charset=utf-8" },
+  body: JSON.stringify(body),
+});
+
+function makeClient() {
+  if (process.env.DATABASE_URL) {
+    return new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+  }
+  return new Client({
+    host: process.env.PGHOST,
+    user: process.env.PGUSER,
+    password: process.env.PGPASSWORD,
+    database: process.env.PGDATABASE,
+    port: +(process.env.PGPORT || 5432),
+    ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined,
+  });
 }
 
-const $  = (s, el=document) => el.querySelector(s);
-const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
-
-// ====== UI helpers ======
-function toast(msg, type='warn', ms=4200){
-  const t = $('#toast'); if(!t) return;
-  t.textContent = msg;
-  t.style.borderColor = type==='err' ? '#ef4444' : type==='ok' ? '#19c37d' : 'rgba(255,255,255,.12)';
-  t.style.display = 'block';
-  clearTimeout(t._to);
-  t._to = setTimeout(()=> t.style.display='none', ms);
+function readToken(event) {
+  const h = event.headers || {};
+  const ah = h.authorization || h.Authorization || "";
+  if (ah?.startsWith?.("Bearer ")) return ah.slice(7);
+  return null;
+}
+function requireUser(event) {
+  const token = readToken(event);
+  if (!token || !process.env.JWT_SECRET) return null;
+  try { const c = jwt.verify(token, process.env.JWT_SECRET); return { id: c?.sub, email: c?.email, name: c?.name, role: c?.role }; }
+  catch { return null; }
+}
+function requireUserId(event) {
+  const u = requireUser(event);
+  return u?.id || null;
 }
 
-function showSectionById(id){
-  const sections = $$('.section');
-  sections.forEach(s => s.style.display = (s.id === id ? 'block' : 'none'));
-  $$('.nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === ('#'+id)));
-}
-function setNavFromHash(){
-  const raw = location.hash || '#home';
-  const main = raw.split('?')[0] || '#home';
-  $$('.nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === main));
-}
-function parseHash(){
-  const raw = location.hash || '#home';
-  const [path, query] = raw.split('?');
-  const params = Object.fromEntries(new URLSearchParams(query||'').entries());
-  return { path, params };
+async function opPublicDestinations() {
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+    const { rows } = await client.query(`
+      SELECT id, name, country, region, is_active, sort_order
+      FROM ${SCHEMA}.destinations
+      WHERE is_active = true
+      ORDER BY sort_order ASC, name ASC
+    `);
+    return J(200, { ok: true, items: rows });
+  } catch (e) {
+    console.error("public-destinations:", e);
+    return J(500, { ok: false, error: "Error listando destinos" });
+  } finally { try { await client.end(); } catch {} }
 }
 
-// ====== HTTP helpers ======
-const authHeaders = () => ({ Authorization: 'Bearer ' + token });
-async function asJson(r){
-  let text = await r.text();
-  try { return JSON.parse(text || '{}'); } catch { return { ok:false, error:text || r.statusText }; }
+async function opPublicServices() {
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+    const { rows } = await client.query(`
+      SELECT s.id, s.service_kind, s.name, s.description, s.base_price_usd,
+             s.destination_id, d.name AS destination,
+             s.provider_id, p.name AS provider,
+             s.is_active
+      FROM ${SCHEMA}.services_catalog s
+      LEFT JOIN ${SCHEMA}.destinations d ON d.id = s.destination_id
+      LEFT JOIN ${SCHEMA}.providers    p ON p.id = s.provider_id
+      WHERE s.is_active = true
+      ORDER BY s.service_kind ASC, s.name ASC
+    `);
+    return J(200, { ok: true, items: rows });
+  } catch (e) {
+    console.error("public-services:", e);
+    return J(500, { ok: false, error: "Error listando servicios" });
+  } finally { try { await client.end(); } catch {} }
 }
-const fget = async (url) => {
-  try{
-    const r = await fetch(url, { headers: authHeaders() });
-    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
-    return await asJson(r);
-  }catch(e){ return { ok:false, error:String(e) }; }
-};
-const fpost = async (url, body) => {
-  try{
-    const r = await fetch(url, {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', ...authHeaders() },
-      body: JSON.stringify(body)
-    });
-    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
-    return await asJson(r);
-  }catch(e){ return { ok:false, error:String(e) }; }
-};
-const fupload = async (url, formData) => {
-  try{
-    const r = await fetch(url, { method:'POST', headers: authHeaders(), body: formData });
-    if(!r.ok) return { ok:false, error:`${r.status} ${r.statusText}`, _status:r.status };
-    return await asJson(r);
-  }catch(e){ return { ok:false, error:String(e) }; }
-};
 
-// ====== Endpoints esperados (cliente/públicos) ======
-const EP = {
-  publicDest: '/.netlify/functions/public-destinations',
-  publicServ: '/.netlify/functions/public-services',
-  dash:       '/.netlify/functions/client-dashboard',
-  list:       '/.netlify/functions/client-requests-list',
-  upsert:     '/.netlify/functions/client-requests-upsert',
-  status:     '/.netlify/functions/client-requests-status',
-  attachList: '/.netlify/functions/client-attachments-list',
-  upload:     '/.netlify/functions/upload',
-  // (opcionales de depuración — algunos ya los tienes)
-  ping:       '/.netlify/functions/_db-ping'
-};
+async function opClientRequestsList(event) {
+  const uid = requireUserId(event);
+  if (!uid) return J(401, { ok: false, error: "Unauthorized" });
 
-// ====== Diagnóstico de endpoints ======
-let HEALTH = {
-  publicDest:false, publicServ:false, dash:false, list:false, upsert:false, status:false, attachList:false, upload:false, ping:null
-};
-async function healthCheck(){
-  const tests = [
-    ['publicDest', EP.publicDest, 'GET'],
-    ['publicServ', EP.publicServ, 'GET'],
-    ['dash',       EP.dash,       'GET'],
-    ['list',       EP.list,       'GET'],
-    ['upsert',     EP.upsert,     'POST', { service_kind:'tour' }], // body mínimo válido
-    ['status',     EP.status,     'POST', { id:'00000000-0000-0000-0000-000000000000', to_status:'discarded' }],
-    ['attachList', EP.attachList, 'GET?request_id=fake'],
-    ['upload',     EP.upload,     'HEAD'], // HEAD puede no estar — si falla, marcamos null
-    ['ping',       EP.ping,       'GET', null, true]
-  ];
+  const url = new URL(event.rawUrl || `http://x${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`);
+  const status = url.searchParams.get('status');
 
-  const out = [];
-  for (const [key, url, method, body, optional] of tests){
-    try{
-      let res;
-      if (method === 'GET'){
-        res = await fetch(url, { headers:authHeaders() });
-      } else if (method === 'GET?request_id=fake'){
-        res = await fetch(url + '?request_id=00000000-0000-0000-0000-000000000000', { headers:authHeaders() });
-      } else if (method === 'POST'){
-        res = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json', ...authHeaders()}, body:JSON.stringify(body||{}) });
-      } else if (method === 'HEAD'){
-        res = await fetch(url, { method:'HEAD', headers:authHeaders() });
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+    const params = [uid];
+    let where = `r.client_id = $1`;
+    if (status) { params.push(status); where += ` AND r.current_status = $2`; }
+
+    const q = `
+      SELECT r.id, r.client_id, r.service_kind, r.destination_id, r.start_date, r.end_date,
+             r.guests, r.budget_usd, r.dietary_notes, r.interests, r.notes,
+             r.current_status,
+             ri.catalog_id,
+             sc.name AS servicio, sc.service_kind AS servicio_kind,
+             d.name  AS destino
+      FROM ${SCHEMA}.requests r
+      LEFT JOIN ${SCHEMA}.request_items   ri ON ri.request_id = r.id
+      LEFT JOIN ${SCHEMA}.services_catalog sc ON sc.id = ri.catalog_id
+      LEFT JOIN ${SCHEMA}.destinations    d  ON d.id = r.destination_id
+      WHERE ${where}
+      ORDER BY r.created_at DESC
+      LIMIT 200
+    `;
+    const { rows } = await client.query(q, params);
+    return J(200, { ok: true, items: rows });
+  } catch (e) {
+    console.error("client-requests-list:", e);
+    const msg = String(e?.message || e);
+    if (/relation .*requests.* does not exist/i.test(msg)) return J(500, { ok: false, error: `No existe la tabla ${SCHEMA}.requests` });
+    return J(500, { ok: false, error: "Error listando solicitudes" });
+  } finally { try { await client.end(); } catch {} }
+}
+
+async function opClientRequestsUpsert(event) {
+  if (event.httpMethod !== 'POST') return J(405, { ok: false, error: 'Method Not Allowed' });
+  const user = requireUser(event);
+  if (!user?.id) return J(401, { ok: false, error: 'Unauthorized' });
+
+  let p = {};
+  try { p = JSON.parse(event.body || "{}"); }
+  catch { return J(400, { ok: false, error: 'JSON inválido' }); }
+
+  const id = p.id || null;
+  const service_kind = p.service_kind;
+  if (!service_kind) return J(400, { ok: false, error: 'service_kind requerido' });
+  const destination_id = p.destination_id || null;
+  const catalog_id     = p.catalog_id || null;
+  const start_date     = p.start_date || null;
+  const end_date       = p.end_date || null;
+  const guests         = p.guests==null || p.guests==="" ? null : +p.guests;
+  const budget_usd     = p.budget_usd==null || p.budget_usd==="" ? null : +p.budget_usd;
+  const dietary_notes  = p.dietary_notes || null;
+  const interests      = Array.isArray(p.interests) ? p.interests : [];
+  const notes          = p.notes || null;
+
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+
+    if (!id) {
+      const qi = `
+        INSERT INTO ${SCHEMA}.requests
+          (client_id, service_kind, destination_id, start_date, end_date, guests, budget_usd,
+           dietary_notes, interests, notes, language)
+        VALUES
+          ($1::uuid, $2::service_type, $3::uuid, $4::date, $5::date, $6::int, $7::numeric,
+           $8::text, $9::text[], $10::text, 'es'::lang_code)
+        RETURNING id
+      `;
+      const { rows } = await client.query(qi, [
+        user.id, service_kind, destination_id, start_date, end_date, guests, budget_usd,
+        dietary_notes, interests, notes
+      ]);
+      const newId = rows[0].id;
+      if (catalog_id) {
+        await client.query(
+          `INSERT INTO ${SCHEMA}.request_items (request_id, catalog_id, quantity) VALUES ($1::uuid,$2::uuid,1)`,
+          [newId, catalog_id]
+        );
       }
-      const okish = res && (res.ok || res.status===400 || res.status===401 || res.status===403 || res.status===404);
-      HEALTH[key] = okish ? (res.ok) : false;
-      out.push([key, res.status, res.statusText]);
-    }catch(e){
-      HEALTH[key] = optional ? null : false;
-      out.push([key, 'ERR', String(e)]);
+      return J(200, { ok: true, id: newId });
+    } else {
+      const q = `
+        UPDATE ${SCHEMA}.requests r
+        SET service_kind = $3::service_type,
+            destination_id = $4::uuid,
+            start_date = $5::date,
+            end_date   = $6::date,
+            guests     = $7::int,
+            budget_usd = $8::numeric,
+            dietary_notes = $9::text,
+            interests = $10::text[],
+            notes = $11::text,
+            updated_at = now()
+        WHERE r.id = $1::uuid AND r.client_id = $2::uuid
+        RETURNING id
+      `;
+      const u = await client.query(q, [
+        id, user.id, service_kind, destination_id, start_date, end_date,
+        guests, budget_usd, dietary_notes, interests, notes
+      ]);
+      if (!u.rowCount) return J(404, { ok: false, error: 'No encontrado' });
+
+      await client.query(`DELETE FROM ${SCHEMA}.request_items WHERE request_id=$1`, [id]);
+      if (catalog_id) {
+        await client.query(
+          `INSERT INTO ${SCHEMA}.request_items (request_id, catalog_id, quantity) VALUES ($1::uuid,$2::uuid,1)`,
+          [id, catalog_id]
+        );
+      }
+      return J(200, { ok: true, id });
     }
-  }
+  } catch (e) {
+    console.error("client-requests-upsert:", e);
+    const msg = String(e?.message || e);
+    if (/invalid input syntax for type uuid/i.test(msg))   return J(400, { ok: false, error: 'UUID inválido' });
+    if (/invalid input value for enum service_type/i.test(msg)) return J(400, { ok: false, error: 'service_kind inválido' });
+    if (/value for domain lang_code/i.test(msg))          return J(400, { ok: false, error: 'Idioma inválido' });
+    return J(500, { ok: false, error: 'Error guardando solicitud' });
+  } finally { try { await client.end(); } catch {} }
+}
 
-  // UI de diagnóstico (no requiere cambios en tu HTML; reusa Home)
-  const chips = $('#chipsMine');
-  if (chips){
-    const mk = (k, good, statusTxt) => {
-      const span = document.createElement('span');
-      span.className = 'chip';
-      span.textContent = `${k}: ${statusTxt}`;
-      span.style.color = good===true ? '#19c37d' : (good===null ? '#f5a524' : '#ef4444');
-      return span;
-    };
-    chips.innerHTML = '';
-    for (const [k, st, txt] of out){
-      const good = HEALTH[k];
-      chips.appendChild(mk(k, good, `${st}`));
+async function opClientRequestsStatus(event) {
+  if (event.httpMethod !== 'POST') return J(405, { ok: false, error: 'Method Not Allowed' });
+  const uid = requireUserId(event);
+  if (!uid) return J(401, { ok: false, error: 'Unauthorized' });
+
+  let p = {};
+  try { p = JSON.parse(event.body || "{}"); }
+  catch { return J(400, { ok: false, error: 'JSON inválido' }); }
+  const { id, to_status } = p;
+  if (!id || !to_status) return J(400, { ok: false, error: 'id y to_status requeridos' });
+
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+
+    const r = await client.query(`
+      UPDATE ${SCHEMA}.requests
+      SET current_status = $3::request_status, updated_at = now()
+      WHERE id = $1::uuid AND client_id = $2::uuid
+      RETURNING id
+    `, [id, uid, to_status]);
+
+    if (!r.rowCount) return J(404, { ok: false, error: 'No encontrado' });
+    return J(200, { ok: true });
+  } catch (e) {
+    console.error("client-requests-status:", e);
+    const msg = String(e?.message || e);
+    if (/invalid input value for enum request_status/i.test(msg)) return J(400, { ok: false, error: 'Estado inválido' });
+    if (/Transición de estado no permitida/i.test(msg))           return J(400, { ok: false, error: msg });
+    return J(500, { ok: false, error: 'Error actualizando estado' });
+  } finally { try { await client.end(); } catch {} }
+}
+
+async function opClientAttachmentsList(event) {
+  const uid = requireUserId(event);
+  if (!uid) return J(401, { ok: false, error: 'Unauthorized' });
+
+  const url = new URL(event.rawUrl || `http://x${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`);
+  const request_id = url.searchParams.get('request_id');
+  if (!request_id) return J(400, { ok: false, error: 'request_id requerido' });
+
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+    const owner = await client.query(`SELECT 1 FROM ${SCHEMA}.requests WHERE id=$1::uuid AND client_id=$2::uuid`, [request_id, uid]);
+    if (!owner.rowCount) return J(404, { ok: false, error: 'No encontrado' });
+
+    const { rows } = await client.query(`
+      SELECT id, file_name, mime_type, size_bytes, storage_url, created_at
+      FROM ${SCHEMA}.attachments
+      WHERE request_id = $1::uuid
+      ORDER BY created_at DESC
+    `, [request_id]);
+    return J(200, { ok: true, items: rows });
+  } catch (e) {
+    console.error("client-attachments-list:", e);
+    return J(500, { ok: false, error: 'Error listando adjuntos' });
+  } finally { try { await client.end(); } catch {} }
+}
+
+async function opPing() {
+  const client = makeClient();
+  try {
+    await client.connect();
+    await client.query(`SET search_path TO ${SCHEMA}, public`);
+    const { rows } = await client.query(`SELECT now() AS ts`);
+    return J(200, { ok: true, ts: rows[0].ts });
+  } catch (e) {
+    return J(500, { ok: false, error: "DB error" });
+  } finally { try { await client.end(); } catch {} }
+}
+
+export async function handler(event) {
+  try {
+    const op = (event.queryStringParameters && event.queryStringParameters.op) || '';
+    if (!op) return J(400, { ok: false, error: 'op requerido' });
+
+    // GETs
+    if (event.httpMethod === 'GET') {
+      if (op === 'public-destinations') return opPublicDestinations();
+      if (op === 'public-services')     return opPublicServices();
+      if (op === 'client-requests-list')return opClientRequestsList(event);
+      if (op === 'client-attachments-list') return opClientAttachmentsList(event);
+      if (op === 'ping')                return opPing();
+      return J(404, { ok: false, error: 'op desconocido (GET)' });
     }
-  }
 
-  // Mensajes guía
-  const missing = Object.entries(HEALTH).filter(([k,v])=> v===false && k!=='ping').map(([k])=>k);
-  if (missing.length){
-    console.warn('Faltan endpoints cliente:', missing);
-    toast('Faltan endpoints del cliente: ' + missing.join(', '), 'warn', 6000);
-  }
-}
+    // POSTs
+    if (event.httpMethod === 'POST') {
+      if (op === 'client-requests-upsert') return opClientRequestsUpsert(event);
+      if (op === 'client-requests-status') return opClientRequestsStatus(event);
+      return J(404, { ok: false, error: 'op desconocido (POST)' });
+    }
 
-// ====== Catálogos ======
-const REF = { destinations: [], services: [] };
-
-async function prefetchRefs(){
-  const [dres, sres] = await Promise.all([ fget(EP.publicDest), fget(EP.publicServ) ]);
-
-  if (!dres?.items) {
-    REF.destinations = [];
-    console.error('public-destinations falló:', dres?.error);
-  } else REF.destinations = dres.items.filter(x=>x.is_active!==false);
-
-  if (!sres?.items) {
-    REF.services = [];
-    console.error('public-services falló:', sres?.error);
-  } else REF.services = sres.items.filter(x=>x.is_active!==false);
-
-  // Selects: crear nueva
-  const selDestN = $('#selDestinationNew');
-  if (selDestN) {
-    selDestN.innerHTML = `<option value="">— selecciona —</option>` +
-      REF.destinations
-        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-  }
-  const selServN = $('#selServiceNew');
-  if (selServN) {
-    selServN.innerHTML = `<option value="">— (opcional) —</option>` +
-      REF.services
-        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
-  }
-
-  // Selects: editar
-  const selDestE = $('#selDestinationEdit');
-  if (selDestE) {
-    selDestE.innerHTML = `<option value="">— sin destino —</option>` +
-      REF.destinations
-        .sort((a,b)=> (a.sort_order-b.sort_order) || a.name.localeCompare(b.name))
-        .map(d=>`<option value="${d.id}">${d.name}${d.country?(' · '+d.country):''}</option>`).join('');
-  }
-  const selServE = $('#selServiceEdit');
-  if (selServE) {
-    selServE.innerHTML = `<option value="">— (opcional) —</option>` +
-      REF.services
-        .sort((a,b)=> (a.service_kind.localeCompare(b.service_kind)) || a.name.localeCompare(b.name))
-        .map(s=>`<option value="${s.id}">${s.name} · ${s.service_kind}${s.base_price_usd?(' · $'+s.base_price_usd):''}</option>`).join('');
+    return J(405, { ok: false, error: 'Method Not Allowed' });
+  } catch (e) {
+    console.error("api router:", e);
+    return J(500, { ok: false, error: 'Error interno' });
   }
 }
-
-// ====== Home (resumen) ======
-async function loadClientHome(){
-  const data = await fget(EP.dash);
-  if(!data || data.ok===false){
-    $('#kpiMine')?.replaceChildren(document.createTextNode('—'));
-    const tb = $('#tblMyRecent'); if (tb) tb.innerHTML = `<tr><td colspan="6" class="muted">${data?.error || 'Dashboard no disponible'}</td></tr>`;
-    console.error('client-dashboard:', data?.error);
-    return;
-  }
-  $('#kpiMine').textContent = data.total ?? 0;
-
-  const tb = $('#tblMyRecent'); if (tb) {
-    tb.innerHTML='';
-    (data.recientes||[]).forEach(r=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${r.id}</td><td>${r.servicio}</td><td>${r.destino}</td><td>${r.estado}</td><td>${r.creada}</td>
-                      <td><button class="btn btnOpenReq" data-id="${r.id}">Abrir</button></td>`;
-      tb.appendChild(tr);
-    });
-    tb.querySelectorAll('.btnOpenReq').forEach(b=>{
-      b.onclick = ()=> { location.hash = `#solicitudes/edit?id=${b.dataset.id}`; };
-    });
-    if(!data.recientes?.length) tb.innerHTML = `<tr><td colspan="6" class="muted">Sin recientes</td></tr>`;
-  }
-}
-$('#btnRefreshClient')?.addEventListener('click', loadClientHome);
-
-// ====== Nueva solicitud ======
-$('#formNewReq')?.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if (HEALTH.upsert === false) {
-    toast('Endpoint de creación no disponible (.functions/client-requests-upsert)', 'err'); 
-    return;
-  }
-  const fd = new FormData(e.target);
-  const body = Object.fromEntries(fd.entries());
-
-  // Normaliza
-  body.guests = body.guests ? +body.guests : null;
-  body.budget_usd = body.budget_usd ? +body.budget_usd : null;
-  body.destination_id = body.destination_id || null;
-  body.catalog_id     = body.catalog_id || null;
-  body.interests      = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-  if(!body.service_kind){ toast('Selecciona un tipo de servicio','warn'); return; }
-
-  const r = await fpost(EP.upsert, body);
-  $('#msgNewReq').textContent = r.ok ? 'Solicitud creada' : (r.error||'Error');
-  if(r.ok){
-    toast('Solicitud enviada','ok',2200);
-    e.target.reset();
-    location.hash = '#mis-solicitudes';
-    await loadMyRequests();
-  } else {
-    console.error('client-requests-upsert:', r.error);
-  }
-});
-
-// ====== Lista de mis solicitudes ======
-async function loadMyRequests(){
-  const st = $('#fltStatusMyReq')?.value || '';
-  const url = EP.list + (st?`?status=${encodeURIComponent(st)}`:'');
-  const d = await fget(url);
-  const tb = $('#tblMyReq'); if(!tb) return;
-  tb.innerHTML='';
-  if(d?.error || d?.ok===false){ tb.innerHTML=`<tr><td colspan="6" class="muted">${d.error||'No disponible'}</td></tr>`; console.error('client-requests-list:', d?.error); return; }
-  (d.items||[]).forEach(it=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML = `
-      <td>${it.id}</td>
-      <td>${it.servicio||'—'}</td>
-      <td>${it.destino||'—'}</td>
-      <td>${it.fecha || (it.start_date? it.start_date : '—')}</td>
-      <td>${it.estado||'—'}</td>
-      <td style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btnOpen" data-id="${it.id}">Abrir</button>
-        ${it.estado!=='discarded' && it.estado!=='closed' ? `<button class="btn btnCancel" data-id="${it.id}">Cancelar</button>` : ''}
-      </td>
-    `;
-    tb.appendChild(tr);
-  });
-
-  tb.querySelectorAll('.btnOpen').forEach(btn=>{
-    btn.onclick = ()=> { location.hash = `#solicitudes/edit?id=${btn.dataset.id}`; };
-  });
-  tb.querySelectorAll('.btnCancel').forEach(btn=>{
-    btn.onclick = async ()=>{
-      if (HEALTH.status === false) { toast('Endpoint de cambio de estado no disponible', 'err'); return; }
-      const id = btn.dataset.id;
-      if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-      const r = await fpost(EP.status, { id, to_status:'discarded' });
-      if(!r.ok){ toast(r.error||'Error','err'); console.error('client-requests-status:', r.error); return; }
-      toast('Solicitud cancelada','ok',2200);
-      await loadMyRequests();
-      await loadClientHome();
-    };
-  });
-
-  if(!(d.items||[]).length) tb.innerHTML=`<tr><td colspan="6" class="muted">No tienes solicitudes</td></tr>`;
-}
-$('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
-
-// ====== Editar solicitud + adjuntos ======
-async function openMyRequestEdit(id){
-  await prefetchRefs();
-
-  const d = await fget(EP.list);
-  const item = (d.items||[]).find(x=> x.id===id);
-  if(!item){ toast('Solicitud no encontrada','err'); location.hash='#mis-solicitudes'; return; }
-
-  const f = $('#formReqEdit');
-  if (f) {
-    f.id.value = item.id;
-
-    const dest = REF.destinations.find(dd => dd.id===item.destination_id) || REF.destinations.find(dd => dd.name===item.destino);
-    const serv = REF.services.find(ss => ss.id===item.catalog_id)         || REF.services.find(ss => ss.name===item.servicio);
-    $('#selDestinationEdit').value = dest ? dest.id : '';
-    $('#selServiceEdit').value     = serv ? serv.id : '';
-
-    f.service_kind.value = item.service_kind || item.servicio_kind || '';
-    f.start_date.value   = item.start_date || '';
-    f.end_date.value     = item.end_date || '';
-    f.guests.value       = item.guests ?? '';
-    f.budget_usd.value   = item.budget_usd ?? '';
-    f.dietary_notes.value= item.dietary_notes || '';
-    f.interests.value    = (item.interests||[]).join(', ');
-    f.notes.value        = item.notes || '';
-  }
-
-  $('#reqPreview').innerHTML = `
-    <div><b>Folio:</b> ${item.id}</div>
-    <div><b>Servicio:</b> ${item.servicio||'—'} (${item.service_kind||'—'})</div>
-    <div><b>Destino:</b> ${item.destino||'—'}</div>
-    <div><b>Fecha:</b> ${item.start_date||'—'} ${item.end_date?('→ '+item.end_date):''}</div>
-    <div><b>Huéspedes:</b> ${item.guests??'—'} · <b>Presupuesto:</b> ${item.budget_usd??'—'}</div>
-    <div><b>Estado:</b> ${item.estado}</div>
-  `;
-
-  // Adjuntos
-  await loadAttachmentsList(item.id);
-
-  const up = $('#uploadRequestId');
-  if (up) up.value = item.id;
-
-  showSectionById('solicitud-edit');
-}
-
-$('#formReqEdit')?.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if (HEALTH.upsert === false) { toast('Endpoint de actualización no disponible', 'err'); return; }
-  const fd = new FormData(e.target);
-  const body = Object.fromEntries(fd.entries());
-  body.guests = body.guests ? +body.guests : null;
-  body.budget_usd = body.budget_usd ? +body.budget_usd : null;
-  body.destination_id = body.destination_id || null;
-  body.catalog_id     = body.catalog_id || null;
-  body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
-
-  const r = await fpost(EP.upsert, body);
-  $('#msgReqEdit').textContent = r.ok ? 'Cambios guardados' : (r.error||'Error');
-  if(r.ok){
-    toast('Solicitud actualizada','ok',2200);
-    await loadMyRequests();
-    await loadClientHome();
-  } else {
-    console.error('client-requests-upsert (edit):', r.error);
-  }
-});
-
-$('#btnCancelReq')?.addEventListener('click', async ()=>{
-  const id = $('#formReqEdit')?.id?.value;
-  if(!id) return;
-  if (HEALTH.status === false) { toast('Endpoint de cambio de estado no disponible', 'err'); return; }
-  if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-  const r = await fpost(EP.status, { id, to_status:'discarded' });
-  if(!r.ok){ toast(r.error||'Error','err'); console.error('client-requests-status:', r.error); return; }
-  toast('Solicitud cancelada','ok',2200);
-  location.hash = '#mis-solicitudes';
-  await loadMyRequests();
-  await loadClientHome();
-});
-
-// Adjuntos
-async function loadAttachmentsList(request_id){
-  const ul = $('#attachmentsList'); if(!ul) return;
-  if (HEALTH.attachList === false) { ul.innerHTML = `<li class="muted">Endpoint de adjuntos no disponible</li>`; return; }
-  ul.innerHTML = '<li class="muted">Cargando…</li>';
-  const d = await fget(EP.attachList + '?request_id=' + encodeURIComponent(request_id));
-  if(d?.error || d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'Error'}</li>`; console.error('client-attachments-list:', d?.error); return; }
-  if(!(d.items||[]).length){ ul.innerHTML = `<li class="muted">Sin archivos</li>`; return; }
-  ul.innerHTML = '';
-  (d.items||[]).forEach(a=>{
-    const li = document.createElement('li');
-    li.innerHTML = `
-      <div><b>${a.file_name}</b> <span class="muted">(${a.mime_type}, ${(a.size_bytes/1024).toFixed(1)} KB)</span></div>
-      ${a.storage_url ? `<div><a class="btn" href="${a.storage_url}" target="_blank" rel="noopener">Ver/Descargar</a></div>` : ''}
-    `;
-    ul.appendChild(li);
-  });
-}
-
-$('#formUpload')?.addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  if (HEALTH.upload === false) { toast('Endpoint de subida no disponible', 'err'); return; }
-  const fd = new FormData(e.target);
-  const file = fd.get('file');
-  const request_id = fd.get('request_id');
-  if(!file || !request_id){ toast('Selecciona un archivo y una solicitud','warn'); return; }
-  const okType = /^(application\/pdf|image\/png|image\/jpe?g)$/i.test(file.type);
-  if(!okType){ toast('Tipo no permitido (solo PDF/JPG/PNG)','warn'); return; }
-  if(file.size > 10*1024*1024){ toast('Archivo > 10MB','warn'); return; }
-
-  const upfd = new FormData();
-  upfd.append('file', file);
-  upfd.append('request_id', request_id);
-
-  const r = await fupload(EP.upload, upfd);
-  $('#msgUpload').textContent = r.ok ? 'Archivo subido' : (r.error||'Error');
-  if(r.ok){
-    toast('Adjunto subido','ok',2200);
-    e.target.reset();
-    await loadAttachmentsList(request_id);
-  } else {
-    console.error('upload:', r.error);
-  }
-});
-
-// ====== Router ======
-async function router(){
-  const { path, params } = parseHash();
-  setNavFromHash();
-
-  if (path === '#home' || path === '#') {
-    showSectionById('home');
-    await healthCheck();   // << muestra estado en Home
-    await loadClientHome();
-    return;
-  }
-  if (path === '#nueva') {
-    showSectionById('nueva');
-    await prefetchRefs();
-    if (HEALTH.upsert === false) toast('Crear solicitud no disponible (falta función)', 'warn');
-    return;
-  }
-  if (path === '#mis-solicitudes') {
-    showSectionById('mis-solicitudes');
-    await loadMyRequests();
-    return;
-  }
-  if (path.startsWith('#solicitudes/edit')) {
-    const id = params.id || '';
-    if (!id) { toast('Falta id','warn'); location.hash = '#mis-solicitudes'; return; }
-    await openMyRequestEdit(id);
-    return;
-  }
-
-  showSectionById('home');
-  await healthCheck();
-  await loadClientHome();
-}
-window.addEventListener('hashchange', router);
-
-// ====== Logout ======
-$('#btnLogout')?.addEventListener('click', ()=>{
-  localStorage.clear();
-  location.replace('/login.html');
-});
-
-// ====== Arranque ======
-(async ()=>{
-  if(!location.hash) location.hash = '#home';
-  await prefetchRefs();
-  await router();
-})();
