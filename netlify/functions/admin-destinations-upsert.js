@@ -13,16 +13,17 @@ export const handler = (event) => safeHandler(async () => {
   if (!name) return json(200, { ok: false, error: "name is required" });
 
   const pool = db();
+
   if (id) {
     await pool.query(
       `UPDATE destinations
-       SET name=$2, country=$3, region=$4, sort_order=$5, is_active=$6, updated_at=now()
-       WHERE id=$1`,
+          SET name=$2, country=$3, region=$4, sort_order=$5, is_active=$6, updated_at=now()
+        WHERE id=$1`,
       [id, name, country ?? null, region ?? null, sort_order, !!is_active]
     );
     return json(200, { ok: true, id });
   }
-  // Insert; manejar duplicados por índice expresivo (no ON CONFLICT usable sobre expresión)
+
   try {
     const { rows } = await pool.query(
       `INSERT INTO destinations (name, country, region, sort_order, is_active)
