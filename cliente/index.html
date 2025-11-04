@@ -43,8 +43,8 @@
       background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
       border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)
     }
-    .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
-    @media (max-width:1100px){ .col-4,.col-6,.col-8{grid-column:span 12} }
+    .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    @media (max-width:1100px){ .col-3,.col-4,.col-6,.col-8{grid-column:span 12} }
 
     label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
     input,select,textarea{
@@ -130,7 +130,7 @@
                     <option value="">— selecciona —</option>
                   </select>
                 </div>
-                <div class="col-6">
+                <div class="col-12">
                   <label>Servicio (catálogo) — opcional</label>
                   <select name="catalog_id" id="selServiceNew">
                     <option value="">— (opcional) —</option>
