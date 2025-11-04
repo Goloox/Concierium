@@ -1,3 +1,4 @@
+// ESM
 import jwt from "jsonwebtoken";
 import { db } from "./_db.js";
 
@@ -19,17 +20,21 @@ export async function requireAdmin(event) {
   } catch {
     return { ok: false, statusCode: 401, error: "Invalid token" };
   }
-  // claims.sub = user id OR claims.email (como emitas). Cubrimos ambos.
+
   const pool = db();
   const { rows } = await pool.query(
-    `SELECT id, email, role, is_active FROM users
-     WHERE (id::text = $1 OR email = $2) LIMIT 1`,
+    `SELECT id, email, role, is_active
+       FROM users
+      WHERE (id::text = $1 OR email = $2)
+      LIMIT 1`,
     [claims.sub ?? "", claims.email ?? ""]
   );
+
   const u = rows[0];
   if (!u) return { ok: false, statusCode: 401, error: "User not found" };
   if (!u.is_active) return { ok: false, statusCode: 403, error: "User disabled" };
   if (u.role !== "admin" && u.role !== "superadmin")
     return { ok: false, statusCode: 403, error: "Admin role required" };
+
   return { ok: true, user: u };
 }
