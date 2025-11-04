@@ -134,6 +134,35 @@
         </div>
       </section>
 
+      <!-- DESTINO EDIT -->
+<section id="destino-edit" class="section" style="display:none">
+  <h2>Editar destino</h2>
+  <div class="card" style="margin-bottom:12px">
+    <button class="btn" id="btnBackDestinos">← Volver a Destinos</button>
+  </div>
+  <div class="grid">
+    <div class="card col-6">
+      <h3>Formulario</h3>
+      <form id="formDestEdit">
+        <input type="hidden" name="id">
+        <label>Nombre</label><input name="name" required>
+        <label>País</label><input name="country">
+        <label>Región</label><input name="region">
+        <label>Orden</label><input name="sort_order" type="number" value="100">
+        <label>Activo</label>
+        <select name="is_active"><option value="true">Sí</option><option value="false">No</option></select>
+        <button class="btn" type="submit">Guardar cambios</button>
+        <span id="msgDestEdit" class="muted"></span>
+      </form>
+    </div>
+    <div class="card col-6">
+      <h3>Vista previa</h3>
+      <div id="destPreview" class="muted">—</div>
+    </div>
+  </div>
+</section>
+
+
       <!-- PROVEEDORES -->
       <section id="proveedores" class="section" style="display:none">
         <h2>Proveedores</h2>
@@ -173,6 +202,45 @@
           </div>
         </div>
       </section>
+<!-- PROVEEDOR EDIT -->
+<section id="proveedor-edit" class="section" style="display:none">
+  <h2>Editar proveedor</h2>
+  <div class="card" style="margin-bottom:12px">
+    <button class="btn" id="btnBackProveedores">← Volver a Proveedores</button>
+  </div>
+  <div class="grid">
+    <div class="card col-6">
+      <h3>Formulario</h3>
+      <form id="formProvEdit">
+        <input type="hidden" name="id">
+        <label>Nombre</label><input name="name" required>
+        <label>Tipo</label>
+        <select name="type" required>
+          <option value="hotel">hotel</option>
+          <option value="residence">residence</option>
+          <option value="tour_operator">tour_operator</option>
+          <option value="restaurant">restaurant</option>
+          <option value="chef">chef</option>
+          <option value="assistant">assistant</option>
+          <option value="translator">translator</option>
+          <option value="security">security</option>
+          <option value="transport">transport</option>
+        </select>
+        <label>Email</label><input name="email" type="email">
+        <label>Teléfono</label><input name="phone">
+        <label>Rating (0–5)</label><input name="rating" type="number" step="0.1" min="0" max="5">
+        <label>Activo</label>
+        <select name="is_active"><option value="true">Sí</option><option value="false">No</option></select>
+        <button class="btn" type="submit">Guardar cambios</button>
+        <span id="msgProvEdit" class="muted"></span>
+      </form>
+    </div>
+    <div class="card col-6">
+      <h3>Vista previa</h3>
+      <div id="provPreview" class="muted">—</div>
+    </div>
+  </div>
+</section>
 
       <!-- SERVICIOS -->
       <section id="servicios" class="section" style="display:none">
@@ -285,6 +353,32 @@
       </section>
     </main>
   </div>
+<!-- SOLICITUD EDIT -->
+<section id="solicitud-edit" class="section" style="display:none">
+  <h2>Editar solicitud</h2>
+  <div class="card" style="margin-bottom:12px">
+    <button class="btn" id="btnBackSolicitudes">← Volver a Solicitudes</button>
+  </div>
+  <div class="grid">
+    <div class="card col-6">
+      <h3>Formulario</h3>
+      <form id="formReqEdit">
+        <input type="hidden" name="id">
+        <label>Estado</label>
+        <select name="to_status" required>
+          <option>new</option><option>curation</option><option>proposal_sent</option>
+          <option>confirmed</option><option>closed</option><option>discarded</option>
+        </select>
+        <button class="btn" type="submit">Actualizar estado</button>
+        <span id="msgReqEdit" class="muted"></span>
+      </form>
+    </div>
+    <div class="card col-6">
+      <h3>Resumen</h3>
+      <div id="reqPreview" class="muted">—</div>
+    </div>
+  </div>
+</section>
 
   <div id="toast" class="toast" style="display:none"></div>
   <script src="/js/auth-guard.js"></script>
