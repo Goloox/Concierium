@@ -1,317 +1,535 @@
-// netlify/functions/api.js  (ESM, una sola función que maneja TODO)
-// Requiere: DATABASE_URL (o PGHOST/PGUSER/PGPASSWORD/PGDATABASE/PGPORT/PGSSL), JWT_SECRET, DB_SCHEMA (opcional)
-import { Client } from "pg";
-import jwt from "jsonwebtoken";
+// /client/js/clientdashboard.js  — ESM ÚNICO
+// Requiere que existan en el DOM los ids usados en /client/index.html
+// y que el token JWT esté en localStorage ("token").
 
-const SCHEMA = process.env.DB_SCHEMA || "concierium";
+////////////////////////////////////////////////////////////////////////////////
+// Helpers base
+////////////////////////////////////////////////////////////////////////////////
+const token = localStorage.getItem('token') || '';
+const $  = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
 
-const J = (status, body) => ({
-  statusCode: status,
-  headers: { "content-type": "application/json; charset=utf-8" },
-  body: JSON.stringify(body),
-});
+function toast(msg, ms=2200){
+  const t = $('#toast');
+  if(!t) return alert(msg);
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(()=>{ t.style.display='none'; }, ms);
+}
 
-function makeClient() {
-  if (process.env.DATABASE_URL) {
-    return new Client({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+const authHeaders = () => token ? { Authorization: 'Bearer ' + token } : {};
+
+const fget = (url) =>
+  fetch(url, { headers: authHeaders() })
+    .then(r => r.json())
+    .catch(e => ({ ok:false, error:String(e) }));
+
+const fpost = (url, body) =>
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(body)
+  }).then(r => r.json())
+   .catch(e => ({ ok:false, error:String(e) }));
+
+const fupload = (url, formData) =>
+  fetch(url, { method: 'POST', headers: authHeaders(), body: formData })
+    .then(r => r.json())
+    .catch(e => ({ ok:false, error:String(e) }));
+
+const apiGet  = (op, qs={}) => {
+  const qp = new URLSearchParams({ op, ...qs }).toString();
+  return fget('/.netlify/functions/api?' + qp);
+};
+const apiPost = (op, body) => {
+  const qp = new URLSearchParams({ op }).toString();
+  return fpost('/.netlify/functions/api?' + qp, body);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Estado en memoria
+////////////////////////////////////////////////////////////////////////////////
+const state = {
+  destinations: [],     // [{id,name,...}]
+  services: [],         // [{id, service_kind, name, destination, provider, ...}]
+  myRequests: [],       // [{...}]
+  editCurrent: null,    // request en edición
+};
+
+////////////////////////////////////////////////////////////////////////////////
+/** Utilidades UI */
+////////////////////////////////////////////////////////////////////////////////
+function setActiveNav(hash){
+  $$('.nav a').forEach(a => a.classList.toggle('active', a.getAttribute('href') === hash));
+}
+function showSection(id){
+  $$('.section').forEach(sec => sec.style.display = (sec.id === id ? 'block' : 'none'));
+}
+
+function fillSelect(selectEl, rows, {value='id', label='name', withEmpty=true, emptyText='— selecciona —'}={}){
+  if(!selectEl) return;
+  selectEl.innerHTML = '';
+  if (withEmpty) {
+    const op = document.createElement('option');
+    op.value = ''; op.textContent = emptyText;
+    selectEl.appendChild(op);
   }
-  return new Client({
-    host: process.env.PGHOST,
-    user: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    database: process.env.PGDATABASE,
-    port: +(process.env.PGPORT || 5432),
-    ssl: process.env.PGSSL === "true" ? { rejectUnauthorized: false } : undefined,
+  for (const r of rows){
+    const op = document.createElement('option');
+    op.value = r[value] ?? '';
+    op.textContent = r[label] ?? r[value] ?? '';
+    selectEl.appendChild(op);
+  }
+}
+
+function fmtDate(s){
+  if(!s) return '—';
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return String(s);
+  return d.toISOString().replace('T',' ').slice(0,16);
+}
+
+function splitInterests(s){
+  if (!s) return [];
+  if (Array.isArray(s)) return s;
+  return String(s).split(',').map(x=>x.trim()).filter(Boolean);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Prefetch referencias (destinos/servicios) — se usa en varias pantallas
+////////////////////////////////////////////////////////////////////////////////
+async function prefetchRefs(){
+  const [dests, servs] = await Promise.all([
+    apiGet('public-destinations'),
+    apiGet('public-services'),
+  ]);
+
+  if(!dests.ok){
+    console.error(dests.error);
+    toast('No se pudieron cargar destinos');
+    state.destinations = [];
+  } else {
+    state.destinations = dests.items || [];
+  }
+
+  if(!servs.ok){
+    console.error(servs.error);
+    toast('No se pudieron cargar servicios');
+    state.services = [];
+  } else {
+    state.services = servs.items || [];
+  }
+
+  // Armar selects compartidos
+  fillSelect($('#selDestinationNew'), state.destinations);
+  // El de "editar" se construye cuando entramos a la vista de edición
+  refreshServiceSelectFor('#selServiceNew', $('#selKindNew')?.value || '');
+}
+
+function refreshServiceSelectFor(selectCss, kindFilter=''){
+  const el = $(selectCss);
+  if(!el) return;
+  const items = state.services
+    .filter(s => !kindFilter || s.service_kind === kindFilter);
+  const rows = items.map(s => ({ id: s.id, name: `${s.name} ${s.destination ? '· '+s.destination : ''}` }));
+  fillSelect(el, rows, { withEmpty:true, emptyText:'— (opcional) —' });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// HOME — KPIs y recientes (del propio usuario)
+////////////////////////////////////////////////////////////////////////////////
+async function loadHome(){
+  // Reusa la lista de mis solicitudes para KPIs y tabla "Recientes"
+  const resp = await apiGet('client-requests-list');
+  if(!resp.ok){
+    console.error(resp.error);
+    const msg = String(resp.error||'Error');
+    if (/no existe la tabla .*requests/i.test(msg)) {
+      toast('La tabla requests no existe. Corre el esquema SQL.');
+    } else {
+      toast('No se pudieron cargar tus solicitudes');
+    }
+    $('#kpiMine').textContent = '—';
+    $('#tblMyRecent').innerHTML = '<tr><td colspan="6">Error</td></tr>';
+    $('#chipsMine').innerHTML = '';
+    return;
+  }
+  const items = resp.items || [];
+  state.myRequests = items;
+
+  // KPIs por estado
+  const byStatus = items.reduce((acc, r)=>{
+    const k = r.current_status || 'new';
+    acc[k] = (acc[k]||0) + 1;
+    return acc;
+  }, {});
+  const total = items.length;
+  $('#kpiMine').textContent = String(total);
+  const chips = $('#chipsMine'); chips.innerHTML = '';
+  for (const [st, n] of Object.entries(byStatus)){
+    const span = document.createElement('span');
+    span.className = 'chip';
+    span.textContent = `${st}: ${n}`;
+    chips.appendChild(span);
+  }
+
+  // Recientes (top 10)
+  const tb = $('#tblMyRecent'); tb.innerHTML = '';
+  items.slice(0,10).forEach(r=>{
+    const tr = document.createElement('tr');
+    const fecha = r.start_date || r.created_at || '';
+    tr.innerHTML = `
+      <td>${r.id}</td>
+      <td>${r.servicio || r.servicio_kind || r.service_kind || '—'}</td>
+      <td>${r.destino || '—'}</td>
+      <td>${r.current_status || 'new'}</td>
+      <td>${fmtDate(fecha)}</td>
+      <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(r.id)}">Editar</a></td>
+    `;
+    tb.appendChild(tr);
   });
 }
 
-function readToken(event) {
-  const h = event.headers || {};
-  const ah = h.authorization || h.Authorization || "";
-  if (ah?.startsWith?.("Bearer ")) return ah.slice(7);
-  return null;
-}
-function requireUser(event) {
-  const token = readToken(event);
-  if (!token || !process.env.JWT_SECRET) return null;
-  try { const c = jwt.verify(token, process.env.JWT_SECRET); return { id: c?.sub, email: c?.email, name: c?.name, role: c?.role }; }
-  catch { return null; }
-}
-function requireUserId(event) {
-  const u = requireUser(event);
-  return u?.id || null;
-}
+////////////////////////////////////////////////////////////////////////////////
+// NUEVA — crear solicitud
+////////////////////////////////////////////////////////////////////////////////
+function bindNueva(){
+  const selKind = $('#selKindNew');
+  selKind?.addEventListener('change', ()=>{
+    refreshServiceSelectFor('#selServiceNew', selKind.value);
+  });
 
-async function opPublicDestinations() {
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-    const { rows } = await client.query(`
-      SELECT id, name, country, region, is_active, sort_order
-      FROM ${SCHEMA}.destinations
-      WHERE is_active = true
-      ORDER BY sort_order ASC, name ASC
-    `);
-    return J(200, { ok: true, items: rows });
-  } catch (e) {
-    console.error("public-destinations:", e);
-    return J(500, { ok: false, error: "Error listando destinos" });
-  } finally { try { await client.end(); } catch {} }
-}
+  $('#formNewReq')?.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const f = e.target;
+    const data = Object.fromEntries(new FormData(f).entries());
 
-async function opPublicServices() {
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-    const { rows } = await client.query(`
-      SELECT s.id, s.service_kind, s.name, s.description, s.base_price_usd,
-             s.destination_id, d.name AS destination,
-             s.provider_id, p.name AS provider,
-             s.is_active
-      FROM ${SCHEMA}.services_catalog s
-      LEFT JOIN ${SCHEMA}.destinations d ON d.id = s.destination_id
-      LEFT JOIN ${SCHEMA}.providers    p ON p.id = s.provider_id
-      WHERE s.is_active = true
-      ORDER BY s.service_kind ASC, s.name ASC
-    `);
-    return J(200, { ok: true, items: rows });
-  } catch (e) {
-    console.error("public-services:", e);
-    return J(500, { ok: false, error: "Error listando servicios" });
-  } finally { try { await client.end(); } catch {} }
+    const payload = {
+      service_kind: data.service_kind || '',
+      destination_id: data.destination_id || null,
+      catalog_id: data.catalog_id || null,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null,
+      guests: data.guests ? +data.guests : null,
+      budget_usd: data.budget_usd ? +data.budget_usd : null,
+      dietary_notes: data.dietary_notes || null,
+      interests: splitInterests(data.interests),
+      notes: data.notes || null,
+    };
+
+    const r = await apiPost('client-requests-upsert', payload);
+    const msgEl = $('#msgNewReq');
+    msgEl.textContent = r.ok ? 'Enviado' : (r.error || 'Error');
+    if(r.ok){
+      f.reset();
+      // recarga home y mis solicitudes
+      await Promise.all([loadHome(), loadMisSolicitudes()]);
+      // navega a mis solicitudes
+      location.hash = '#mis-solicitudes';
+      toast('Solicitud creada');
+    }else{
+      toast(msgEl.textContent);
+    }
+  });
 }
 
-async function opClientRequestsList(event) {
-  const uid = requireUserId(event);
-  if (!uid) return J(401, { ok: false, error: "Unauthorized" });
+////////////////////////////////////////////////////////////////////////////////
+// MIS SOLICITUDES — listar y filtrar
+////////////////////////////////////////////////////////////////////////////////
+async function loadMisSolicitudes(){
+  const st = $('#fltStatusMyReq')?.value || '';
+  const d = await apiGet('client-requests-list', st ? { status: st } : {});
+  const tb = $('#tblMyReq');
+  if(!tb) return;
 
-  const url = new URL(event.rawUrl || `http://x${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`);
-  const status = url.searchParams.get('status');
+  if(!d.ok){
+    console.error(d.error);
+    tb.innerHTML = `<tr><td colspan="6">${d.error||'Error'}</td></tr>`;
+    return;
+  }
 
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-    const params = [uid];
-    let where = `r.client_id = $1`;
-    if (status) { params.push(status); where += ` AND r.current_status = $2`; }
+  const items = d.items || [];
+  state.myRequests = items;
 
-    const q = `
-      SELECT r.id, r.client_id, r.service_kind, r.destination_id, r.start_date, r.end_date,
-             r.guests, r.budget_usd, r.dietary_notes, r.interests, r.notes,
-             r.current_status,
-             ri.catalog_id,
-             sc.name AS servicio, sc.service_kind AS servicio_kind,
-             d.name  AS destino
-      FROM ${SCHEMA}.requests r
-      LEFT JOIN ${SCHEMA}.request_items   ri ON ri.request_id = r.id
-      LEFT JOIN ${SCHEMA}.services_catalog sc ON sc.id = ri.catalog_id
-      LEFT JOIN ${SCHEMA}.destinations    d  ON d.id = r.destination_id
-      WHERE ${where}
-      ORDER BY r.created_at DESC
-      LIMIT 200
+  if(items.length === 0){
+    tb.innerHTML = '<tr><td colspan="6">Sin resultados</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = '';
+  for(const it of items){
+    const fecha = it.start_date || it.created_at || '';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${it.id}</td>
+      <td>${it.servicio || it.servicio_kind || it.service_kind || '—'}</td>
+      <td>${it.destino || '—'}</td>
+      <td>${fmtDate(fecha)}</td>
+      <td>${it.current_status || 'new'}</td>
+      <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}">Editar</a></td>
     `;
-    const { rows } = await client.query(q, params);
-    return J(200, { ok: true, items: rows });
-  } catch (e) {
-    console.error("client-requests-list:", e);
-    const msg = String(e?.message || e);
-    if (/relation .*requests.* does not exist/i.test(msg)) return J(500, { ok: false, error: `No existe la tabla ${SCHEMA}.requests` });
-    return J(500, { ok: false, error: "Error listando solicitudes" });
-  } finally { try { await client.end(); } catch {} }
-}
-
-async function opClientRequestsUpsert(event) {
-  if (event.httpMethod !== 'POST') return J(405, { ok: false, error: 'Method Not Allowed' });
-  const user = requireUser(event);
-  if (!user?.id) return J(401, { ok: false, error: 'Unauthorized' });
-
-  let p = {};
-  try { p = JSON.parse(event.body || "{}"); }
-  catch { return J(400, { ok: false, error: 'JSON inválido' }); }
-
-  const id = p.id || null;
-  const service_kind = p.service_kind;
-  if (!service_kind) return J(400, { ok: false, error: 'service_kind requerido' });
-  const destination_id = p.destination_id || null;
-  const catalog_id     = p.catalog_id || null;
-  const start_date     = p.start_date || null;
-  const end_date       = p.end_date || null;
-  const guests         = p.guests==null || p.guests==="" ? null : +p.guests;
-  const budget_usd     = p.budget_usd==null || p.budget_usd==="" ? null : +p.budget_usd;
-  const dietary_notes  = p.dietary_notes || null;
-  const interests      = Array.isArray(p.interests) ? p.interests : [];
-  const notes          = p.notes || null;
-
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-
-    if (!id) {
-      const qi = `
-        INSERT INTO ${SCHEMA}.requests
-          (client_id, service_kind, destination_id, start_date, end_date, guests, budget_usd,
-           dietary_notes, interests, notes, language)
-        VALUES
-          ($1::uuid, $2::service_type, $3::uuid, $4::date, $5::date, $6::int, $7::numeric,
-           $8::text, $9::text[], $10::text, 'es'::lang_code)
-        RETURNING id
-      `;
-      const { rows } = await client.query(qi, [
-        user.id, service_kind, destination_id, start_date, end_date, guests, budget_usd,
-        dietary_notes, interests, notes
-      ]);
-      const newId = rows[0].id;
-      if (catalog_id) {
-        await client.query(
-          `INSERT INTO ${SCHEMA}.request_items (request_id, catalog_id, quantity) VALUES ($1::uuid,$2::uuid,1)`,
-          [newId, catalog_id]
-        );
-      }
-      return J(200, { ok: true, id: newId });
-    } else {
-      const q = `
-        UPDATE ${SCHEMA}.requests r
-        SET service_kind = $3::service_type,
-            destination_id = $4::uuid,
-            start_date = $5::date,
-            end_date   = $6::date,
-            guests     = $7::int,
-            budget_usd = $8::numeric,
-            dietary_notes = $9::text,
-            interests = $10::text[],
-            notes = $11::text,
-            updated_at = now()
-        WHERE r.id = $1::uuid AND r.client_id = $2::uuid
-        RETURNING id
-      `;
-      const u = await client.query(q, [
-        id, user.id, service_kind, destination_id, start_date, end_date,
-        guests, budget_usd, dietary_notes, interests, notes
-      ]);
-      if (!u.rowCount) return J(404, { ok: false, error: 'No encontrado' });
-
-      await client.query(`DELETE FROM ${SCHEMA}.request_items WHERE request_id=$1`, [id]);
-      if (catalog_id) {
-        await client.query(
-          `INSERT INTO ${SCHEMA}.request_items (request_id, catalog_id, quantity) VALUES ($1::uuid,$2::uuid,1)`,
-          [id, catalog_id]
-        );
-      }
-      return J(200, { ok: true, id });
-    }
-  } catch (e) {
-    console.error("client-requests-upsert:", e);
-    const msg = String(e?.message || e);
-    if (/invalid input syntax for type uuid/i.test(msg))   return J(400, { ok: false, error: 'UUID inválido' });
-    if (/invalid input value for enum service_type/i.test(msg)) return J(400, { ok: false, error: 'service_kind inválido' });
-    if (/value for domain lang_code/i.test(msg))          return J(400, { ok: false, error: 'Idioma inválido' });
-    return J(500, { ok: false, error: 'Error guardando solicitud' });
-  } finally { try { await client.end(); } catch {} }
-}
-
-async function opClientRequestsStatus(event) {
-  if (event.httpMethod !== 'POST') return J(405, { ok: false, error: 'Method Not Allowed' });
-  const uid = requireUserId(event);
-  if (!uid) return J(401, { ok: false, error: 'Unauthorized' });
-
-  let p = {};
-  try { p = JSON.parse(event.body || "{}"); }
-  catch { return J(400, { ok: false, error: 'JSON inválido' }); }
-  const { id, to_status } = p;
-  if (!id || !to_status) return J(400, { ok: false, error: 'id y to_status requeridos' });
-
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-
-    const r = await client.query(`
-      UPDATE ${SCHEMA}.requests
-      SET current_status = $3::request_status, updated_at = now()
-      WHERE id = $1::uuid AND client_id = $2::uuid
-      RETURNING id
-    `, [id, uid, to_status]);
-
-    if (!r.rowCount) return J(404, { ok: false, error: 'No encontrado' });
-    return J(200, { ok: true });
-  } catch (e) {
-    console.error("client-requests-status:", e);
-    const msg = String(e?.message || e);
-    if (/invalid input value for enum request_status/i.test(msg)) return J(400, { ok: false, error: 'Estado inválido' });
-    if (/Transición de estado no permitida/i.test(msg))           return J(400, { ok: false, error: msg });
-    return J(500, { ok: false, error: 'Error actualizando estado' });
-  } finally { try { await client.end(); } catch {} }
-}
-
-async function opClientAttachmentsList(event) {
-  const uid = requireUserId(event);
-  if (!uid) return J(401, { ok: false, error: 'Unauthorized' });
-
-  const url = new URL(event.rawUrl || `http://x${event.path}${event.queryStringParameters ? '?' + new URLSearchParams(event.queryStringParameters) : ''}`);
-  const request_id = url.searchParams.get('request_id');
-  if (!request_id) return J(400, { ok: false, error: 'request_id requerido' });
-
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-    const owner = await client.query(`SELECT 1 FROM ${SCHEMA}.requests WHERE id=$1::uuid AND client_id=$2::uuid`, [request_id, uid]);
-    if (!owner.rowCount) return J(404, { ok: false, error: 'No encontrado' });
-
-    const { rows } = await client.query(`
-      SELECT id, file_name, mime_type, size_bytes, storage_url, created_at
-      FROM ${SCHEMA}.attachments
-      WHERE request_id = $1::uuid
-      ORDER BY created_at DESC
-    `, [request_id]);
-    return J(200, { ok: true, items: rows });
-  } catch (e) {
-    console.error("client-attachments-list:", e);
-    return J(500, { ok: false, error: 'Error listando adjuntos' });
-  } finally { try { await client.end(); } catch {} }
-}
-
-async function opPing() {
-  const client = makeClient();
-  try {
-    await client.connect();
-    await client.query(`SET search_path TO ${SCHEMA}, public`);
-    const { rows } = await client.query(`SELECT now() AS ts`);
-    return J(200, { ok: true, ts: rows[0].ts });
-  } catch (e) {
-    return J(500, { ok: false, error: "DB error" });
-  } finally { try { await client.end(); } catch {} }
-}
-
-export async function handler(event) {
-  try {
-    const op = (event.queryStringParameters && event.queryStringParameters.op) || '';
-    if (!op) return J(400, { ok: false, error: 'op requerido' });
-
-    // GETs
-    if (event.httpMethod === 'GET') {
-      if (op === 'public-destinations') return opPublicDestinations();
-      if (op === 'public-services')     return opPublicServices();
-      if (op === 'client-requests-list')return opClientRequestsList(event);
-      if (op === 'client-attachments-list') return opClientAttachmentsList(event);
-      if (op === 'ping')                return opPing();
-      return J(404, { ok: false, error: 'op desconocido (GET)' });
-    }
-
-    // POSTs
-    if (event.httpMethod === 'POST') {
-      if (op === 'client-requests-upsert') return opClientRequestsUpsert(event);
-      if (op === 'client-requests-status') return opClientRequestsStatus(event);
-      return J(404, { ok: false, error: 'op desconocido (POST)' });
-    }
-
-    return J(405, { ok: false, error: 'Method Not Allowed' });
-  } catch (e) {
-    console.error("api router:", e);
-    return J(500, { ok: false, error: 'Error interno' });
+    tb.appendChild(tr);
   }
 }
+
+function bindMisSolicitudes(){
+  $('#btnLoadMyReq')?.addEventListener('click', loadMisSolicitudes);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// EDITAR — cargar, pintar, guardar y cancelar
+////////////////////////////////////////////////////////////////////////////////
+function findReqInState(id){
+  return state.myRequests.find(r => r.id === id) || null;
+}
+
+function previewEdit(data, box){
+  if(!box) return;
+  const lines = [];
+  const mapKind = (v)=> v || data.servicio_kind || data.service_kind || '—';
+  lines.push(`Servicio: ${mapKind(data.service_kind)}`);
+  lines.push(`Destino: ${data.destination_id || '—'}`);
+  lines.push(`Catálogo: ${data.catalog_id || '—'}`);
+  lines.push(`Desde: ${data.start_date || '—'}  Hasta: ${data.end_date || '—'}`);
+  lines.push(`Huéspedes: ${data.guests ?? '—'}  Presupuesto: ${data.budget_usd ?? '—'}`);
+  lines.push(`Alimentación: ${data.dietary_notes || '—'}`);
+  lines.push(`Intereses: ${(Array.isArray(data.interests)?data.interests:splitInterests(data.interests)).join(', ') || '—'}`);
+  lines.push(`Notas: ${data.notes || '—'}`);
+  box.textContent = lines.join('\n');
+}
+
+function fillEditSelects(){
+  fillSelect($('#selDestinationEdit'), state.destinations, { withEmpty:true, emptyText:'— sin destino —' });
+  // servicios filtrados por kind cuando cambie el select del form
+  refreshServiceSelectFor('#selServiceEdit', $('[name="service_kind"]', $('#formReqEdit'))?.value || '');
+}
+
+function bindEditForm(){
+  const form = $('#formReqEdit'); if(!form) return;
+  // filtrar catálogo por tipo
+  $('[name="service_kind"]', form)?.addEventListener('change', (e)=>{
+    refreshServiceSelectFor('#selServiceEdit', e.target.value);
+  });
+  // previsualización on input
+  form.addEventListener('input', ()=>{
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.interests = splitInterests(data.interests);
+    previewEdit(data, $('#reqPreview'));
+  });
+  // submit
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form).entries());
+    const payload = {
+      id: data.id,
+      service_kind: data.service_kind,
+      destination_id: data.destination_id || null,
+      catalog_id: data.catalog_id || null,
+      start_date: data.start_date || null,
+      end_date: data.end_date || null,
+      guests: data.guests ? +data.guests : null,
+      budget_usd: data.budget_usd ? +data.budget_usd : null,
+      dietary_notes: data.dietary_notes || null,
+      interests: splitInterests(data.interests),
+      notes: data.notes || null,
+    };
+    const r = await apiPost('client-requests-upsert', payload);
+    $('#msgReqEdit').textContent = r.ok ? 'Guardado' : (r.error||'Error');
+    toast($('#msgReqEdit').textContent);
+    if(r.ok){
+      await loadMisSolicitudes();
+    }
+  });
+
+  // Cancelar (cambiar a discarded)
+  $('#btnCancelReq')?.addEventListener('click', async ()=>{
+    const id = form.elements.id?.value;
+    if(!id) return toast('Sin id');
+    const r = await apiPost('client-requests-status', { id, to_status:'discarded' });
+    if(!r.ok){ toast(r.error||'Error'); return; }
+    toast('Solicitud cancelada');
+    await loadMisSolicitudes();
+    location.hash = '#mis-solicitudes';
+  });
+}
+
+async function loadAdjuntosList(requestId){
+  const ul = $('#attachmentsList');
+  if(!ul) return;
+  const r = await apiGet('client-attachments-list', { request_id: requestId });
+  if(!r.ok){
+    ul.innerHTML = `<li class="muted">${r.error||'Error'}</li>`;
+    return;
+  }
+  const items = r.items || [];
+  if(items.length === 0){
+    ul.innerHTML = `<li class="muted">Sin adjuntos</li>`;
+    return;
+  }
+  ul.innerHTML = '';
+  for(const a of items){
+    const li = document.createElement('li');
+    const linkText = a.file_name || a.storage_url || a.id;
+    const href = a.storage_url || '#';
+    li.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+        <div>
+          <div><b>${linkText}</b></div>
+          <div class="muted">${a.mime_type} · ${(a.size_bytes??0)} bytes · ${fmtDate(a.created_at)}</div>
+        </div>
+        ${href && href !== '#' ? `<a class="btn" href="${href}" target="_blank" rel="noopener">Ver</a>` : ''}
+      </div>
+    `;
+    ul.appendChild(li);
+  }
+}
+
+function bindUpload(){
+  const f = $('#formUpload');
+  if(!f) return;
+  f.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const rid = $('#uploadRequestId')?.value || f.elements.request_id?.value || '';
+    const file = f.elements.file?.files?.[0];
+    if(!rid){ toast('request_id requerido'); return; }
+    if(!file){ toast('Selecciona un archivo'); return; }
+    const fd = new FormData();
+    fd.append('request_id', rid);
+    fd.append('file', file);
+
+    // NOTA: esta ruta depende de tu función 'upload.js'
+    const r = await fupload('/.netlify/functions/upload', fd);
+    $('#msgUpload').textContent = r.ok ? 'Subido' : (r.error||'Error al subir');
+    toast($('#msgUpload').textContent);
+    if(r.ok){
+      await loadAdjuntosList(rid);
+      f.reset();
+    }
+  });
+}
+
+async function enterEditById(id){
+  // buscar en cache; si no está, recargar lista
+  let req = findReqInState(id);
+  if(!req){
+    const d = await apiGet('client-requests-list');
+    if(d.ok) state.myRequests = d.items || [];
+    req = findReqInState(id);
+  }
+  if(!req){
+    toast('No se encontró la solicitud');
+    location.hash = '#mis-solicitudes';
+    return;
+  }
+  state.editCurrent = req;
+
+  // mostrar sección
+  setActiveNav('#mis-solicitudes'); // mantiene menú
+  showSection('solicitud-edit');
+
+  // llenar selects de referencias
+  fillEditSelects();
+
+  // poblar form
+  const form = $('#formReqEdit');
+  form.reset();
+  form.elements.id.value = req.id;
+  form.elements.service_kind.value = (req.service_kind || req.servicio_kind || 'tour');
+  refreshServiceSelectFor('#selServiceEdit', form.elements.service_kind.value);
+  if (req.destination_id) form.elements.destination_id.value = req.destination_id;
+  if (req.catalog_id)     form.elements.catalog_id.value     = req.catalog_id;
+  if (req.start_date)     form.elements.start_date.value     = req.start_date;
+  if (req.end_date)       form.elements.end_date.value       = req.end_date;
+  if (req.guests!=null)   form.elements.guests.value         = req.guests;
+  if (req.budget_usd!=null) form.elements.budget_usd.value   = req.budget_usd;
+  if (req.dietary_notes)  form.elements.dietary_notes.value  = req.dietary_notes;
+  const ints = Array.isArray(req.interests) ? req.interests : splitInterests(req.interests);
+  form.elements.interests.value = ints.join(', ');
+  if (req.notes)          form.elements.notes.value          = req.notes;
+
+  // preview
+  previewEdit({
+    service_kind: form.elements.service_kind.value,
+    destination_id: form.elements.destination_id.value || null,
+    catalog_id: form.elements.catalog_id.value || null,
+    start_date: form.elements.start_date.value || null,
+    end_date: form.elements.end_date.value || null,
+    guests: form.elements.guests.value ? +form.elements.guests.value : null,
+    budget_usd: form.elements.budget_usd.value ? +form.elements.budget_usd.value : null,
+    dietary_notes: form.elements.dietary_notes.value || null,
+    interests: splitInterests(form.elements.interests.value),
+    notes: form.elements.notes.value || null,
+  }, $('#reqPreview'));
+
+  // listar adjuntos
+  $('#uploadRequestId') && ($('#uploadRequestId').value = req.id);
+  await loadAdjuntosList(req.id);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Router simple por hash
+////////////////////////////////////////////////////////////////////////////////
+async function router(){
+  const h = location.hash || '#home';
+  // rutas:
+  // #home
+  // #nueva
+  // #mis-solicitudes
+  // #solicitudes/edit?id=UUID
+  try{
+    if (h.startsWith('#solicitudes/edit')){
+      const u = new URL(location.href);
+      const id = u.hash.split('?')[1] ? new URLSearchParams(u.hash.split('?')[1]).get('id') : null;
+      setActiveNav('#mis-solicitudes');
+      await prefetchRefs(); // por si hay refresh
+      await enterEditById(id);
+      bindEditForm();
+      bindUpload();
+      return;
+    }
+
+    if (h === '#nueva'){
+      setActiveNav('#nueva');
+      showSection('nueva');
+      await prefetchRefs();
+      bindNueva();
+      return;
+    }
+
+    if (h === '#mis-solicitudes'){
+      setActiveNav('#mis-solicitudes');
+      showSection('mis-solicitudes');
+      await loadMisSolicitudes();
+      bindMisSolicitudes();
+      return;
+    }
+
+    // default: home
+    setActiveNav('#home');
+    showSection('home');
+    await loadHome();
+    $('#btnRefreshClient')?.addEventListener('click', loadHome);
+  }catch(e){
+    console.error('router error', e);
+    toast('Error en router');
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Eventos globales
+////////////////////////////////////////////////////////////////////////////////
+$('#btnLogout')?.addEventListener('click', ()=>{
+  localStorage.clear();
+  // Importante: si tu login está bajo /client/
+  location.replace('/client/login.html');
+});
+
+// navegación SPA
+window.addEventListener('hashchange', router);
+
+// Arranque
+(async ()=>{
+  if(!location.hash) location.hash = '#home';
+  await prefetchRefs();
+  await router();
+})();
