@@ -5,63 +5,29 @@
   <title>Concierium | Cliente</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
-    :root{
-      --bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;
-      --ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)
-    }
+    :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
     *{box-sizing:border-box} html,body{height:100%}
-    body{
-      margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      color:var(--text);
-      background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
-                 radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
-      display:grid;grid-template-rows:auto 1fr
-    }
-    header{
-      position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;
-      padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);
-      border-bottom:1px solid rgba(255,255,255,.06)
-    }
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand img{width:28px;height:28px}
-    .brand b{letter-spacing:.4px}
-    .btn{
-      display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));
-      color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px
-    }
+    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;display:grid;grid-template-rows:auto 1fr}
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
     .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
     aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
     .nav{display:grid;gap:8px}
     .nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
-    .nav a:hover{background:rgba(255,255,255,.06)}
-    .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
+    .nav a:hover{background:rgba(255,255,255,.06)} .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
     main{padding:20px}
     h2{margin:10px 0 12px}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
-      border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)
-    }
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
     .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
     @media (max-width:1100px){ .col-3,.col-4,.col-6,.col-8{grid-column:span 12} }
-
     label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
-    input,select,textarea{
-      width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
-      background:#0f1018;color:var(--text)
-    }
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
-    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)}
-    tbody td{padding:10px}
-    .muted{color:var(--muted)}
-    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
-
-    #toast{
-      position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
-      background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999
-    }
+    input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1018;color:var(--text)}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
+    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
+    .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
+    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
   </style>
 </head>
 <body>
@@ -97,9 +63,7 @@
             <h3>Recientes</h3>
             <div style="overflow:auto">
               <table>
-                <thead>
-                  <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr>
-                </thead>
+                <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr></thead>
                 <tbody id="tblMyRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
               </table>
             </div>
@@ -118,52 +82,25 @@
                   <label>Tipo de servicio</label>
                   <select name="service_kind" id="selKindNew" required>
                     <option value="">— selecciona —</option>
-                    <option value="lodging">lodging</option>
-                    <option value="tour">tour</option>
-                    <option value="dining">dining</option>
-                    <option value="vip">vip</option>
+                    <option value="lodging">lodging</option><option value="tour">tour</option>
+                    <option value="dining">dining</option><option value="vip">vip</option>
                   </select>
                 </div>
                 <div class="col-6">
                   <label>Destino</label>
-                  <select name="destination_id" id="selDestinationNew">
-                    <option value="">— selecciona —</option>
-                  </select>
+                  <select name="destination_id" id="selDestinationNew"><option value="">— selecciona —</option></select>
                 </div>
                 <div class="col-12">
                   <label>Servicio (catálogo) — opcional</label>
-                  <select name="catalog_id" id="selServiceNew">
-                    <option value="">— (opcional) —</option>
-                  </select>
+                  <select name="catalog_id" id="selServiceNew"><option value="">— (opcional) —</option></select>
                 </div>
-                <div class="col-3">
-                  <label>Desde</label>
-                  <input type="date" name="start_date">
-                </div>
-                <div class="col-3">
-                  <label>Hasta</label>
-                  <input type="date" name="end_date">
-                </div>
-                <div class="col-3">
-                  <label>Huéspedes</label>
-                  <input type="number" name="guests" min="1">
-                </div>
-                <div class="col-3">
-                  <label>Presupuesto (USD)</label>
-                  <input type="number" name="budget_usd" step="0.01" min="0">
-                </div>
-                <div class="col-12">
-                  <label>Preferencias alimentarias (opcional)</label>
-                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
-                </div>
-                <div class="col-12">
-                  <label>Intereses (opcional, separa por comas)</label>
-                  <input name="interests" placeholder="playa, cultura, aventura…">
-                </div>
-                <div class="col-12">
-                  <label>Notas</label>
-                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
-                </div>
+                <div class="col-3"><label>Desde</label><input type="date" name="start_date"></div>
+                <div class="col-3"><label>Hasta</label><input type="date" name="end_date"></div>
+                <div class="col-3"><label>Huéspedes</label><input type="number" name="guests" min="1"></div>
+                <div class="col-3"><label>Presupuesto (USD)</label><input type="number" name="budget_usd" step="0.01" min="0"></div>
+                <div class="col-12"><label>Preferencias alimentarias</label><input name="dietary_notes" placeholder="Vegano, sin gluten, etc."></div>
+                <div class="col-12"><label>Intereses (separa por comas)</label><input name="interests" placeholder="playa, cultura, aventura…"></div>
+                <div class="col-12"><label>Notas</label><textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea></div>
               </div>
               <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
                 <button class="btn" type="submit">Enviar solicitud</button>
@@ -195,24 +132,20 @@
         <div class="card">
           <div style="overflow:auto">
             <table>
-              <thead>
-                <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr>
-              </thead>
+              <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
               <tbody id="tblMyReq"><tr><td colspan="6">Cargando…</td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- SOLICITUD EDIT -->
+      <!-- EDITAR SOLICITUD -->
       <section id="solicitud-edit" class="section" style="display:none">
         <h2>Editar solicitud</h2>
-
         <div class="card" style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
           <a class="btn" href="#mis-solicitudes" data-target="mis-solicitudes">← Volver a Mis solicitudes</a>
           <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
         </div>
-
         <div class="grid">
           <div class="card col-6">
             <h3>Formulario</h3>
@@ -222,52 +155,25 @@
                 <div class="col-6">
                   <label>Tipo de servicio</label>
                   <select name="service_kind" required>
-                    <option value="lodging">lodging</option>
-                    <option value="tour">tour</option>
-                    <option value="dining">dining</option>
-                    <option value="vip">vip</option>
+                    <option value="lodging">lodging</option><option value="tour">tour</option>
+                    <option value="dining">dining</option><option value="vip">vip</option>
                   </select>
                 </div>
                 <div class="col-6">
                   <label>Destino</label>
-                  <select name="destination_id" id="selDestinationEdit">
-                    <option value="">— sin destino —</option>
-                  </select>
+                  <select name="destination_id" id="selDestinationEdit"><option value="">— sin destino —</option></select>
                 </div>
                 <div class="col-12">
                   <label>Servicio (catálogo) — opcional</label>
-                  <select name="catalog_id" id="selServiceEdit">
-                    <option value="">— (opcional) —</option>
-                  </select>
+                  <select name="catalog_id" id="selServiceEdit"><option value="">— (opcional) —</option></select>
                 </div>
-                <div class="col-6">
-                  <label>Desde</label>
-                  <input type="date" name="start_date">
-                </div>
-                <div class="col-6">
-                  <label>Hasta</label>
-                  <input type="date" name="end_date">
-                </div>
-                <div class="col-6">
-                  <label>Huéspedes</label>
-                  <input type="number" name="guests" min="1">
-                </div>
-                <div class="col-6">
-                  <label>Presupuesto (USD)</label>
-                  <input type="number" name="budget_usd" step="0.01" min="0">
-                </div>
-                <div class="col-12">
-                  <label>Preferencias alimentarias</label>
-                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
-                </div>
-                <div class="col-12">
-                  <label>Intereses (separa por comas)</label>
-                  <input name="interests" placeholder="playa, cultura, aventura…">
-                </div>
-                <div class="col-12">
-                  <label>Notas</label>
-                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
-                </div>
+                <div class="col-6"><label>Desde</label><input type="date" name="start_date"></div>
+                <div class="col-6"><label>Hasta</label><input type="date" name="end_date"></div>
+                <div class="col-6"><label>Huéspedes</label><input type="number" name="guests" min="1"></div>
+                <div class="col-6"><label>Presupuesto (USD)</label><input type="number" name="budget_usd" step="0.01" min="0"></div>
+                <div class="col-12"><label>Preferencias alimentarias</label><input name="dietary_notes" placeholder="Vegano, sin gluten, etc."></div>
+                <div class="col-12"><label>Intereses (separa por comas)</label><input name="interests" placeholder="playa, cultura, aventura…"></div>
+                <div class="col-12"><label>Notas</label><textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea></div>
               </div>
               <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
                 <button class="btn" type="submit">Guardar cambios</button>
@@ -275,27 +181,14 @@
               </div>
             </form>
           </div>
-
           <div class="card col-6">
             <h3>Resumen</h3>
             <div id="reqPreview" class="muted">—</div>
-
             <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:16px 0"/>
-
             <h3>Adjuntos</h3>
             <ul id="attachmentsList" style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
               <li class="muted">—</li>
             </ul>
-
-            <form id="formUpload" style="margin-top:12px">
-              <input type="hidden" name="request_id" id="uploadRequestId">
-              <label>Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
-              <input type="file" name="file" accept="application/pdf,image/png,image/jpeg">
-              <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Subir</button>
-                <span id="msgUpload" class="muted"></span>
-              </div>
-            </form>
           </div>
         </div>
       </section>
@@ -305,17 +198,16 @@
   <div id="toast"></div>
 
   <script>
-  // ====== CONFIG ======
+  // ====== CONFIG (un solo endpoint) ======
+  const API = '/.netlify/functions/api';
   const EP = {
-    publicDest: '/.netlify/functions/public-destinations',
-    publicServ: '/.netlify/functions/public-services',
-    dash:       '/.netlify/functions/client-dashboard',
-    list:       '/.netlify/functions/client-requests-list',
-    upsert:     '/.netlify/functions/client-requests-upsert',
-    status:     '/.netlify/functions/client-requests-status',
-    attachList: '/.netlify/functions/client-attachments-list',
-    upload:     '/.netlify/functions/upload',
-    ping:       '/.netlify/functions/_db-ping'
+    publicDest: API + '?op=public-destinations',
+    publicServ: API + '?op=public-services',
+    list:       API + '?op=client-requests-list',
+    upsert:     API + '?op=client-requests-upsert',
+    status:     API + '?op=client-requests-status',
+    attachList: API + '?op=client-attachments-list',
+    ping:       API + '?op=ping'
   };
 
   // ====== UTILS ======
@@ -323,7 +215,7 @@
   const $=(s,el=document)=>el.querySelector(s);
   const $$=(s,el=document)=>Array.from(el.querySelectorAll(s));
 
-  function toast(msg, type='warn', ms=4000){
+  function toast(msg, type='warn', ms=3500){
     const t = $('#toast'); if(!t) return;
     t.textContent = msg;
     t.style.borderColor = type==='err' ? '#ef4444' : (type==='ok' ? '#19c37d' : 'rgba(255,255,255,.12)');
@@ -334,25 +226,21 @@
   async function asJson(r){ const txt=await r.text(); try{ return JSON.parse(txt||'{}'); }catch{return{ok:false,error:txt||r.statusText}} }
   async function fget(url){ try{ const r=await fetch(url,{headers:authHeaders()}); if(!r.ok) return {ok:false,error:`${r.status} ${r.statusText}`}; return asJson(r);}catch(e){return{ok:false,error:String(e)}} }
   async function fpost(url,body){ try{ const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body||{})}); if(!r.ok) return {ok:false,error:`${r.status} ${r.statusText}`}; return asJson(r);}catch(e){return{ok:false,error:String(e)}} }
-  async function fupload(url,fd){ try{ const r=await fetch(url,{method:'POST',headers:authHeaders(),body:fd}); if(!r.ok) return {ok:false,error:`${r.status} ${r.statusText}`}; return asJson(r);}catch(e){return{ok:false,error:String(e)}} }
-  async function safe(fn,...args){ try{ return await fn(...args); }catch(e){ console.error(e); toast('Error de UI', 'err'); } }
 
-  // ====== UI: mostrar secciones ======
+  // ====== NAV ======
   function show(id){
     const sections = $$('.section');
     const target = sections.find(s => s.id === id) ? id : 'home';
     sections.forEach(s => s.style.display = (s.id === target ? 'block' : 'none'));
     $$('.nav a').forEach(a => a.classList.toggle('active', a.dataset.target === target));
   }
-
-  // ====== ROUTER ======
   async function routeFromHash(){
     const h = (location.hash || '#home').slice(1);
     if(h.startsWith('edit:')){ await openMyRequestEdit(h.slice(5)); return; }
     show(h);
-    if(h === 'home'){ await safe(healthCheck); await safe(loadClientHome); }
-    if(h === 'nueva'){ await safe(prefetchRefs); }
-    if(h === 'mis-solicitudes'){ await safe(loadMyRequests); }
+    if(h==='home'){ await loadClientHome(); }
+    if(h==='nueva'){ await prefetchRefs(); }
+    if(h==='mis-solicitudes'){ await loadMyRequests(); }
   }
   document.addEventListener('click', async (ev)=>{
     const a = ev.target.closest('a[href^="#"]');
@@ -365,32 +253,8 @@
   });
   window.addEventListener('hashchange', routeFromHash);
 
-  // ====== ESTADO / CATS ======
+  // ====== REFS/CACHE ======
   const REF = { destinations:[], services:[] };
-  async function healthCheck(){
-    const tests = [
-      ['publicDest', EP.publicDest, 'GET'],
-      ['publicServ', EP.publicServ, 'GET'],
-      ['dash',       EP.dash,       'GET'],
-      ['list',       EP.list,       'GET']
-    ];
-    const chips = $('#chipsMine'); if(chips) chips.innerHTML = '';
-    for (const [key,url,method] of tests){
-      try{
-        const r = await fetch(url,{method, headers:authHeaders()});
-        if(chips){
-          const span=document.createElement('span'); span.className='chip';
-          span.textContent = `${key}: ${r.status}`; span.style.color = r.ok ? '#19c37d' : '#ef4444';
-          chips.appendChild(span);
-        }
-      }catch{
-        if(chips){
-          const span=document.createElement('span'); span.className='chip';
-          span.textContent = `${key}: ERR`; span.style.color = '#ef4444'; chips.appendChild(span);
-        }
-      }
-    }
-  }
 
   async function prefetchRefs(){
     const [dres, sres] = await Promise.all([ fget(EP.publicDest), fget(EP.publicServ) ]);
@@ -426,21 +290,22 @@
 
   // ====== HOME ======
   async function loadClientHome(){
-    const data = await fget(EP.dash);
-    $('#kpiMine') && ($('#kpiMine').textContent = (data && data.total!=null) ? data.total : '—');
-    const tb = $('#tblMyRecent'); if(!tb) return;
-    tb.innerHTML = '';
-    if(!data || data.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${data?.error||'Dashboard no disponible'}</td></tr>`; return; }
-    (data.recientes||[]).forEach(r=>{
+    // KPI rápido: contar mis solicitudes desde list
+    const d = await fget(EP.list);
+    $('#kpiMine').textContent = d?.items?.length ?? '—';
+    const chips = $('#chipsMine'); if(chips){ chips.innerHTML = ''; chips.appendChild(Object.assign(document.createElement('span'),{className:'chip',textContent:'list '+(d?.ok!==false?'200':'ERR'),style:`color:${d?.ok!==false?'#19c37d':'#ef4444'}`})); }
+    const tb = $('#tblMyRecent'); tb.innerHTML = '';
+    if(d?.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${d.error||'Dashboard no disponible'}</td></tr>`; return; }
+    (d.items||[]).slice(0,10).forEach(r=>{
       const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${r.id}</td><td>${r.servicio}</td><td>${r.destino}</td><td>${r.estado}</td><td>${r.creada}</td>
+      tr.innerHTML = `<td>${r.id}</td><td>${r.servicio||'—'}</td><td>${r.destino||'—'}</td><td>${r.current_status||'—'}</td><td>${(r.start_date||'').toString().slice(0,10)}</td>
                       <td><button class="btn btnOpenReq" data-id="${r.id}">Abrir</button></td>`;
       tb.appendChild(tr);
     });
-    if(!(data.recientes||[]).length){ tb.innerHTML = `<tr><td colspan="6" class="muted">Sin recientes</td></tr>`; }
+    if(!(d.items||[]).length){ tb.innerHTML = `<tr><td colspan="6" class="muted">Sin recientes</td></tr>`; }
     tb.querySelectorAll('.btnOpenReq').forEach(b=> b.onclick = ()=> openMyRequestEdit(b.dataset.id));
   }
-  $('#btnRefreshClient')?.addEventListener('click', async ()=>{ await healthCheck(); await loadClientHome(); });
+  $('#btnRefreshClient')?.addEventListener('click', loadClientHome);
 
   // ====== NUEVA SOLICITUD ======
   $('#formNewReq')?.addEventListener('submit', async (e)=>{
@@ -455,27 +320,26 @@
     body.interests = (body.interests||'').split(',').map(s=>s.trim()).filter(Boolean);
     if(!body.service_kind){ toast('Selecciona un tipo de servicio'); return; }
     const r = await fpost(EP.upsert, body);
-    $('#msgNewReq') && ($('#msgNewReq').textContent = r.ok ? 'Solicitud creada' : (r.error||'Error'));
-    if(r.ok){ toast('Solicitud enviada','ok',2200); e.target.reset(); await safe(loadMyRequests); history.replaceState(null,'','#mis-solicitudes'); await routeFromHash(); }
+    $('#msgNewReq').textContent = r.ok ? 'Solicitud creada' : (r.error||'Error');
+    if(r.ok){ toast('Solicitud enviada','ok',2200); e.target.reset(); await loadMyRequests(); history.replaceState(null,'','#mis-solicitudes'); await routeFromHash(); }
     else { toast(r.error||'Error al crear','err'); }
   });
 
   // ====== MIS SOLICITUDES ======
   async function loadMyRequests(){
     const st = $('#fltStatusMyReq')?.value || '';
-    const url = EP.list + (st?`?status=${encodeURIComponent(st)}`:'');
+    const url = st ? (EP.list + '&status=' + encodeURIComponent(st)) : EP.list;
     const d = await fget(url);
-    const tb = $('#tblMyReq'); if(!tb) return;
-    tb.innerHTML='';
-    if(d?.error || d?.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${d.error||'No disponible'}</td></tr>`; return; }
+    const tb = $('#tblMyReq'); tb.innerHTML='';
+    if(d?.ok===false){ tb.innerHTML = `<tr><td colspan="6" class="muted">${d.error||'No disponible'}</td></tr>`; return; }
     (d.items||[]).forEach(it=>{
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${it.id}</td><td>${it.servicio||'—'}</td><td>${it.destino||'—'}</td>
-        <td>${it.fecha || it.start_date || '—'}</td><td>${it.estado||'—'}</td>
+        <td>${it.start_date || '—'}</td><td>${it.current_status||'—'}</td>
         <td style="display:flex;gap:6px;flex-wrap:wrap">
           <button class="btn" data-act="open" data-id="${it.id}">Abrir</button>
-          ${it.estado!=='discarded' && it.estado!=='closed' ? `<button class="btn" data-act="cancel" data-id="${it.id}">Cancelar</button>` : ''}
+          ${it.current_status!=='discarded' && it.current_status!=='closed' ? `<button class="btn" data-act="cancel" data-id="${it.id}">Cancelar</button>` : ''}
         </td>`;
       tb.appendChild(tr);
     });
@@ -493,7 +357,7 @@
   }
   $('#btnLoadMyReq')?.addEventListener('click', loadMyRequests);
 
-  // ====== EDITAR SOLICITUD + ADJUNTOS ======
+  // ====== EDIT ======
   async function openMyRequestEdit(id){
     if(!id){ toast('ID no válido','err'); return; }
     await prefetchRefs();
@@ -501,7 +365,7 @@
     const item = (d.items||[]).find(x=> x.id===id);
     if(!item){ toast('Solicitud no encontrada','err'); history.replaceState(null,'','#mis-solicitudes'); return routeFromHash(); }
 
-    const f = $('#formReqEdit'); if(!f){ history.replaceState(null,'','#mis-solicitudes'); return routeFromHash(); }
+    const f = $('#formReqEdit');
     f.id.value = item.id;
     f.service_kind.value = item.service_kind || item.servicio_kind || '';
     f.start_date.value   = item.start_date || '';
@@ -523,11 +387,10 @@
       <div><b>Destino:</b> ${item.destino||'—'}</div>
       <div><b>Fecha:</b> ${item.start_date||'—'} ${item.end_date?('→ '+item.end_date):''}</div>
       <div><b>Huéspedes:</b> ${item.guests??'—'} · <b>Presupuesto:</b> ${item.budget_usd??'—'}</div>
-      <div><b>Estado:</b> ${item.estado}</div>
+      <div><b>Estado:</b> ${item.current_status}</div>
     `;
 
     await loadAttachmentsList(item.id);
-    $('#uploadRequestId').value = item.id;
 
     show('solicitud-edit');
     history.replaceState(null,'','#edit:'+item.id);
@@ -548,22 +411,11 @@
     else { toast(r.error||'Error al guardar','err'); }
   });
 
-  $('#btnCancelReq')?.addEventListener('click', async ()=>{
-    const id = $('#formReqEdit')?.id?.value;
-    if(!id) return;
-    if(!confirm('¿Deseas cancelar esta solicitud?')) return;
-    const r = await fpost(EP.status, { id, to_status:'discarded' });
-    if(!r.ok){ toast(r.error||'Error','err'); return; }
-    toast('Solicitud cancelada','ok',2000);
-    history.replaceState(null,'','#mis-solicitudes');
-    await routeFromHash();
-  });
-
   async function loadAttachmentsList(request_id){
     const ul = $('#attachmentsList'); if(!ul) return;
     ul.innerHTML = '<li class="muted">Cargando…</li>';
-    const d = await fget(EP.attachList + '?request_id=' + encodeURIComponent(request_id));
-    if(d?.error || d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'No disponible'}</li>`; return; }
+    const d = await fget(EP.attachList + '&request_id=' + encodeURIComponent(request_id));
+    if(d?.ok===false){ ul.innerHTML = `<li class="muted">${d.error||'No disponible'}</li>`; return; }
     if(!(d.items||[]).length){ ul.innerHTML = `<li class="muted">Sin archivos</li>`; return; }
     ul.innerHTML = '';
     (d.items||[]).forEach(a=>{
@@ -576,7 +428,6 @@
 
   // ====== BOOT ======
   document.getElementById('btnLogout')?.addEventListener('click', ()=>{ localStorage.clear(); location.replace('/login.html'); });
-
   (async function init(){
     if(!token){ toast('Sesión requerida','warn'); return location.replace('/login.html'); }
     show(((location.hash||'#home').slice(1).split(':')[0]) || 'home');
