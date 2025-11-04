@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Concierium | Cliente</title>
+  <title>Concierium | CLIENTE</title>
+  <!-- Base hace que href="#..." y rutas relativas cuelguen de /client/ -->
+  <base href="/client/">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
     :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
@@ -11,38 +13,33 @@
       background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
                  radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
       display:grid;grid-template-rows:auto 1fr}
-    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;
-      background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
+    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
     .brand{display:flex;align-items:center;gap:10px}.brand img{width:28px;height:28px}.brand b{letter-spacing:.4px}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);
-      padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
+    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
     .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
     aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
-    .nav{display:grid;gap:8px}
-    .nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
-    .nav a:hover{background:rgba(255,255,255,.06)}
-    .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
-    main{padding:20px}
-    h2{margin:10px 0 12px}
+    .nav{display:grid;gap:8px}.nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
+    .nav a:hover{background:rgba(255,255,255,.06)} .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
+    main{padding:20px} h2{margin:10px 0 12px}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
-      border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
-    .col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
-    @media (max-width:1100px){ .col-3,.col-4,.col-6,.col-8{grid-column:span 12} }
+    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
+    @media (max-width:1100px){ .col-4,.col-6,.col-8{grid-column:span 12} }
     label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
     input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1018;color:var(--text)}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
     tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
     .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
-    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);
-      background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
+    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
   </style>
 </head>
 <body>
   <header>
-    <div class="brand"><img src="/img/logo.png" alt=""/><b>Concierium</b><span style="margin-left:8px;color:#9aa3b2">Cliente</span></div>
+    <div class="brand">
+      <img src="/client/img/logo.png" alt=""/>
+      <b>Concierium — CLIENTE</b>
+      <span style="margin-left:8px;color:#9aa3b2">Área del usuario</span>
+    </div>
     <div style="margin-left:auto;display:flex;gap:10px">
       <button class="btn" id="btnLogout">Salir</button>
     </div>
@@ -51,9 +48,9 @@
   <div class="wrap">
     <aside>
       <nav class="nav">
-        <a href="#home" class="active" data-target="home">Home</a>
-        <a href="#nueva" data-target="nueva">Nueva solicitud</a>
-        <a href="#mis-solicitudes" data-target="mis-solicitudes">Mis solicitudes</a>
+        <a href="#home" class="active">Home</a>
+        <a href="#nueva">Nueva solicitud</a>
+        <a href="#mis-solicitudes">Mis solicitudes</a>
       </nav>
     </aside>
 
@@ -73,7 +70,9 @@
             <h3>Recientes</h3>
             <div style="overflow:auto">
               <table>
-                <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Desde</th><th></th></tr></thead>
+                <thead>
+                  <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr>
+                </thead>
                 <tbody id="tblMyRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
               </table>
             </div>
@@ -81,7 +80,7 @@
         </div>
       </section>
 
-      <!-- NUEVA SOLICITUD -->
+      <!-- NUEVA -->
       <section id="nueva" class="section" style="display:none">
         <h2>Nueva solicitud</h2>
         <div class="grid">
@@ -92,25 +91,52 @@
                   <label>Tipo de servicio</label>
                   <select name="service_kind" id="selKindNew" required>
                     <option value="">— selecciona —</option>
-                    <option value="lodging">lodging</option><option value="tour">tour</option>
-                    <option value="dining">dining</option><option value="vip">vip</option>
+                    <option value="lodging">lodging</option>
+                    <option value="tour">tour</option>
+                    <option value="dining">dining</option>
+                    <option value="vip">vip</option>
                   </select>
                 </div>
                 <div class="col-6">
                   <label>Destino</label>
-                  <select name="destination_id" id="selDestinationNew"><option value="">— selecciona —</option></select>
+                  <select name="destination_id" id="selDestinationNew">
+                    <option value="">— selecciona —</option>
+                  </select>
+                </div>
+                <div class="col-6">
+                  <label>Servicio (catálogo) — opcional</label>
+                  <select name="catalog_id" id="selServiceNew">
+                    <option value="">— (opcional) —</option>
+                  </select>
+                </div>
+                <div class="col-3">
+                  <label>Desde</label>
+                  <input type="date" name="start_date">
+                </div>
+                <div class="col-3">
+                  <label>Hasta</label>
+                  <input type="date" name="end_date">
+                </div>
+                <div class="col-3">
+                  <label>Huéspedes</label>
+                  <input type="number" name="guests" min="1">
+                </div>
+                <div class="col-3">
+                  <label>Presupuesto (USD)</label>
+                  <input type="number" name="budget_usd" step="0.01" min="0">
                 </div>
                 <div class="col-12">
-                  <label>Servicio (catálogo) — opcional</label>
-                  <select name="catalog_id" id="selServiceNew"><option value="">— (opcional) —</option></select>
+                  <label>Preferencias alimentarias (opcional)</label>
+                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
                 </div>
-                <div class="col-3"><label>Desde</label><input type="date" name="start_date"></div>
-                <div class="col-3"><label>Hasta</label><input type="date" name="end_date"></div>
-                <div class="col-3"><label>Huéspedes</label><input type="number" name="guests" min="1"></div>
-                <div class="col-3"><label>Presupuesto (USD)</label><input type="number" name="budget_usd" step="0.01" min="0"></div>
-                <div class="col-12"><label>Preferencias alimentarias</label><input name="dietary_notes" placeholder="Vegano, sin gluten, etc."></div>
-                <div class="col-12"><label>Intereses (separa por comas)</label><input name="interests" placeholder="playa, cultura, aventura…"></div>
-                <div class="col-12"><label>Notas</label><textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea></div>
+                <div class="col-12">
+                  <label>Intereses (opcional, separa por comas)</label>
+                  <input name="interests" placeholder="playa, cultura, aventura…">
+                </div>
+                <div class="col-12">
+                  <label>Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                </div>
               </div>
               <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
                 <button class="btn" type="submit">Enviar solicitud</button>
@@ -142,20 +168,23 @@
         <div class="card">
           <div style="overflow:auto">
             <table>
-              <thead><tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr></thead>
+              <thead>
+                <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr>
+              </thead>
               <tbody id="tblMyReq"><tr><td colspan="6">Cargando…</td></tr></tbody>
             </table>
           </div>
         </div>
       </section>
 
-      <!-- EDITAR SOLICITUD -->
+      <!-- EDIT -->
       <section id="solicitud-edit" class="section" style="display:none">
         <h2>Editar solicitud</h2>
-        <div class="card" style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
-          <a class="btn" href="#mis-solicitudes" data-target="mis-solicitudes">← Volver a Mis solicitudes</a>
+        <div class="card" style="margin-bottom:12px;display:flex;gap:10px">
+          <a class="btn" href="#mis-solicitudes">← Volver a Mis solicitudes</a>
           <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
         </div>
+
         <div class="grid">
           <div class="card col-6">
             <h3>Formulario</h3>
@@ -165,25 +194,52 @@
                 <div class="col-6">
                   <label>Tipo de servicio</label>
                   <select name="service_kind" required>
-                    <option value="lodging">lodging</option><option value="tour">tour</option>
-                    <option value="dining">dining</option><option value="vip">vip</option>
+                    <option value="lodging">lodging</option>
+                    <option value="tour">tour</option>
+                    <option value="dining">dining</option>
+                    <option value="vip">vip</option>
                   </select>
                 </div>
                 <div class="col-6">
                   <label>Destino</label>
-                  <select name="destination_id" id="selDestinationEdit"><option value="">— sin destino —</option></select>
+                  <select name="destination_id" id="selDestinationEdit">
+                    <option value="">— sin destino —</option>
+                  </select>
                 </div>
                 <div class="col-12">
                   <label>Servicio (catálogo) — opcional</label>
-                  <select name="catalog_id" id="selServiceEdit"><option value="">— (opcional) —</option></select>
+                  <select name="catalog_id" id="selServiceEdit">
+                    <option value="">— (opcional) —</option>
+                  </select>
                 </div>
-                <div class="col-6"><label>Desde</label><input type="date" name="start_date"></div>
-                <div class="col-6"><label>Hasta</label><input type="date" name="end_date"></div>
-                <div class="col-6"><label>Huéspedes</label><input type="number" name="guests" min="1"></div>
-                <div class="col-6"><label>Presupuesto (USD)</label><input type="number" name="budget_usd" step="0.01" min="0"></div>
-                <div class="col-12"><label>Preferencias alimentarias</label><input name="dietary_notes" placeholder="Vegano, sin gluten, etc."></div>
-                <div class="col-12"><label>Intereses (separa por comas)</label><input name="interests" placeholder="playa, cultura, aventura…"></div>
-                <div class="col-12"><label>Notas</label><textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea></div>
+                <div class="col-6">
+                  <label>Desde</label>
+                  <input type="date" name="start_date">
+                </div>
+                <div class="col-6">
+                  <label>Hasta</label>
+                  <input type="date" name="end_date">
+                </div>
+                <div class="col-6">
+                  <label>Huéspedes</label>
+                  <input type="number" name="guests" min="1">
+                </div>
+                <div class="col-6">
+                  <label>Presupuesto (USD)</label>
+                  <input type="number" name="budget_usd" step="0.01" min="0">
+                </div>
+                <div class="col-12">
+                  <label>Preferencias alimentarias</label>
+                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
+                </div>
+                <div class="col-12">
+                  <label>Intereses (separa por comas)</label>
+                  <input name="interests" placeholder="playa, cultura, aventura…">
+                </div>
+                <div class="col-12">
+                  <label>Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                </div>
               </div>
               <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
                 <button class="btn" type="submit">Guardar cambios</button>
@@ -191,6 +247,7 @@
               </div>
             </form>
           </div>
+
           <div class="card col-6">
             <h3>Resumen</h3>
             <div id="reqPreview" class="muted">—</div>
@@ -199,6 +256,15 @@
             <ul id="attachmentsList" style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
               <li class="muted">—</li>
             </ul>
+            <form id="formUpload" style="margin-top:12px">
+              <input type="hidden" name="request_id" id="uploadRequestId">
+              <label>Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
+              <input type="file" name="file" accept="application/pdf,image/png,image/jpeg">
+              <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
+                <button class="btn" type="submit">Subir</button>
+                <span id="msgUpload" class="muted"></span>
+              </div>
+            </form>
           </div>
         </div>
       </section>
@@ -207,6 +273,18 @@
 
   <div id="toast"></div>
 
-  <script src="/js/dashboardCliente.js"></script>
+  <!-- OJO: ahora scripts también desde /client/... -->
+  <script src="/client/js/auth-guard.js"></script>
+  <script src="/client/js/clientdashboard.js" type="module"></script>
+
+  <script>
+    function syncUploadRequestId(){
+      const f = document.querySelector('#formReqEdit');
+      const up = document.querySelector('#uploadRequestId');
+      if(f && up && f.elements.id && f.elements.id.value){ up.value = f.elements.id.value; }
+    }
+    window.addEventListener('hashchange', ()=>{ if (location.hash.startsWith('#solicitudes/edit')) setTimeout(syncUploadRequestId, 200); });
+    document.addEventListener('DOMContentLoaded', syncUploadRequestId);
+  </script>
 </body>
 </html>
