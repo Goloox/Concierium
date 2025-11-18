@@ -5,68 +5,150 @@
   <title>Concierium | CLIENTE (SPA)</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet"/>
   <style>
-    :root{--bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;--ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)}
+    :root{
+      --bg:#0c0c0f;--muted:#9aa3b2;--text:#e9ecf1;--brand:#00c9a7;--card:#161622;
+      --ok:#19c37d;--warn:#f5a524;--err:#ef4444;--shadow:0 12px 30px rgba(0,0,0,.35)
+    }
     *{box-sizing:border-box} html,body{height:100%}
-    body{margin:0;font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text);
-      background:radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
-                 radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),#0c0c0f;
-      display:grid;grid-template-rows:auto 1fr}
-    header{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;padding:14px 18px;background:rgba(18,18,24,.75);backdrop-filter: blur(8px);border-bottom:1px solid rgba(255,255,255,.06)}
-    .brand{display:flex;align-items:center;gap:10px}.brand b{letter-spacing:.4px}
-    .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));color:var(--text);padding:10px 12px;border-radius:12px;cursor:pointer;font-weight:600;font-size:14px}
+    body{
+      margin:0;
+      font-family:"Poppins",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 800px at 100% -10%, rgba(0,201,167,.12), transparent 55%),
+        radial-gradient(1200px 900px at -10% 110%, rgba(64,68,237,.12), transparent 55%),
+        #0c0c0f;
+      display:grid;
+      grid-template-rows:auto 1fr
+    }
+    header{
+      position:sticky;top:0;z-index:50;
+      display:flex;align-items:center;gap:12px;
+      padding:14px 18px;
+      background:rgba(18,18,24,.75);
+      backdrop-filter: blur(8px);
+      border-bottom:1px solid rgba(255,255,255,.06)
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand b{letter-spacing:.4px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      border:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.06));
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:14px
+    }
+    .btn-small{padding:6px 10px;font-size:12px}
     .wrap{display:grid;grid-template-columns:320px 1fr;min-height:calc(100vh - 64px)}
     aside{padding:18px;background:rgba(16,16,26,.72);border-right:1px solid rgba(255,255,255,.06)}
-    .nav{display:grid;gap:8px}.nav a{padding:10px 12px;border-radius:12px;color:var(--text);text-decoration:none}
-    .nav a:hover{background:rgba(255,255,255,.06)} .nav a.active{background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));border:1px solid rgba(0,201,167,.25)}
-    main{padding:20px} h2{margin:10px 0 12px}
+    .nav{display:grid;gap:8px}
+    .nav a{
+      padding:10px 12px;
+      border-radius:12px;
+      color:var(--text);
+      text-decoration:none
+    }
+    .nav a:hover{background:rgba(255,255,255,.06)}
+    .nav a.active{
+      background:linear-gradient(180deg, rgba(0,201,167,.14), rgba(0,201,167,.05));
+      border:1px solid rgba(0,201,167,.25)
+    }
+    main{padding:20px}
+    h2{margin:10px 0 12px}
+    h3{margin:4px 0 10px}
     .grid{display:grid;gap:16px;grid-template-columns:repeat(12, minmax(0,1fr))}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+    .card{
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.12));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:var(--shadow)
+    }
     .col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
-    @media (max-width:1100px){ .col-4,.col-6,.col-8{grid-column:span 12} }
+    @media (max-width:1100px){ .col-4,.col-6,.col-8{grid-column:span 12} .wrap{grid-template-columns:1fr} aside{display:none} }
     label{font-size:12px;color:var(--muted);display:block;margin:6px 0 4px}
-    input,select,textarea{width:100%;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1018;color:var(--text)}
-    table{width:100%;border-collapse:separate;border-spacing:0 8px} thead th{font-size:12px;color:var(--muted);text-align:left;font-weight:500;padding:0 10px}
-    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)} tbody td{padding:10px}
-    .muted{color:var(--muted)} .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
-    .errorbox{margin-top:8px;padding:10px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#2a1720;color:#ffb4c0}
-    #toast{position:fixed;right:14px;bottom:14px;display:none;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#161622;color:var(--text);box-shadow:var(--shadow);z-index:9999}
+    input,select,textarea{
+      width:100%;padding:10px 12px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0f1018;color:var(--text)
+    }
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    thead th{
+      font-size:12px;color:var(--muted);
+      text-align:left;font-weight:500;padding:0 10px
+    }
+    tbody tr{background:#161622;border:1px solid rgba(255,255,255,.06)}
+    tbody td{padding:10px}
+    .muted{color:var(--muted)}
+    .chip{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.12);margin-right:6px}
+    .errorbox{
+      margin-top:8px;padding:10px;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      background:#2a1720;color:#ffb4c0
+    }
+    #toast{
+      position:fixed;right:14px;bottom:14px;
+      display:none;padding:10px 14px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#161622;color:var(--text);
+      box-shadow:var(--shadow);z-index:9999
+    }
+    .lang-switch{display:flex;gap:6px;align-items:center}
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
-      <b>Concierium — CLIENTE (SPA)</b>
+      <b data-i18n="brand-client">Concierium — CLIENTE (SPA)</b>
       <span id="who" style="margin-left:8px;color:#9aa3b2"></span>
     </div>
-    <div style="margin-left:auto;display:flex;gap:10px">
-      <button class="btn" id="btnLogout" style="display:none">Salir</button>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+      <!-- Selector idioma -->
+      <div class="lang-switch">
+        <button class="btn btn-small lang-btn" data-lang="es">ES</button>
+        <button class="btn btn-small lang-btn" data-lang="en">EN</button>
+      </div>
+      <button class="btn" id="btnLogout" style="display:none" data-i18n="btn-logout">Salir</button>
     </div>
   </header>
 
   <div class="wrap">
     <aside>
       <nav class="nav" id="leftNav" style="display:none">
-        <a href="#home" class="active">Home</a>
-        <a href="#nueva">Nueva solicitud</a>
-        <a href="#mis-solicitudes">Mis solicitudes</a>
-         <a href="#calendario">Calendario</a> <!-- NUEVO -->
+        <a href="#home" class="active" data-i18n="nav-home">Home</a>
+        <a href="#nueva" data-i18n="nav-new">Nueva solicitud</a>
+        <a href="#mis-solicitudes" data-i18n="nav-my-requests">Mis solicitudes</a>
+        <a href="#calendario" data-i18n="nav-calendar">Calendario</a>
       </nav>
     </aside>
 
     <main>
       <!-- LOGIN -->
       <section id="login" class="section">
-        <h2>Iniciar sesión</h2>
+        <h2 data-i18n="login-title">Iniciar sesión</h2>
         <div id="loginErr" class="errorbox" style="display:none"></div>
         <div class="card col-6" style="max-width:560px">
           <form id="formLogin">
-            <label>Email</label>
-            <input name="email" type="email" required placeholder="tu@correo.com"/>
-            <label>Contraseña</label>
-            <input name="password" type="password" required placeholder="••••••••"/>
-            <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-              <button class="btn" type="submit">Entrar</button>
-              <span class="muted">Acceso al área de cliente</span>
+            <label data-i18n="login-email-label">Email</label>
+            <input name="email"
+                   type="email"
+                   required
+                   placeholder="tu@correo.com"
+                   data-i18n-ph="login-email-ph"/>
+            <label data-i18n="login-password-label">Contraseña</label>
+            <input name="password"
+                   type="password"
+                   required
+                   placeholder="••••••••"
+                   data-i18n-ph="login-password-ph"/>
+            <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="btn" type="submit" data-i18n="login-btn">Entrar</button>
+              <span class="muted" data-i18n="login-subtitle">Acceso al área de cliente</span>
             </div>
           </form>
         </div>
@@ -74,24 +156,36 @@
 
       <!-- HOME -->
       <section id="home" class="section" style="display:none">
-        <h2>Resumen</h2>
+        <h2 data-i18n="home-title">Resumen</h2>
         <div id="homeErr" class="errorbox" style="display:none"></div>
         <div class="grid">
           <div class="card col-12">
             <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-              <div><b>Total mis solicitudes:</b> <span id="kpiMine">—</span></div>
+              <div>
+                <b data-i18n="home-total-label">Total mis solicitudes:</b>
+                <span id="kpiMine">—</span>
+              </div>
               <div id="chipsMine" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-              <button class="btn" id="btnRefreshClient" style="margin-left:auto">Refrescar</button>
+              <button class="btn" id="btnRefreshClient" style="margin-left:auto" data-i18n="home-btn-refresh">Refrescar</button>
             </div>
           </div>
           <div class="card col-12">
-            <h3>Recientes</h3>
+            <h3 data-i18n="home-recent-title">Recientes</h3>
             <div style="overflow:auto">
               <table>
                 <thead>
-                  <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Estado</th><th>Creada</th><th></th></tr>
+                  <tr>
+                    <th data-i18n="tbl-folio">Folio</th>
+                    <th data-i18n="tbl-service">Servicio</th>
+                    <th data-i18n="tbl-destination">Destino</th>
+                    <th data-i18n="tbl-status">Estado</th>
+                    <th data-i18n="tbl-created">Creada</th>
+                    <th></th>
+                  </tr>
                 </thead>
-                <tbody id="tblMyRecent"><tr><td colspan="6">Cargando…</td></tr></tbody>
+                <tbody id="tblMyRecent">
+                  <tr><td colspan="6" data-i18n="tbl-loading">Cargando…</td></tr>
+                </tbody>
               </table>
             </div>
           </div>
@@ -100,16 +194,16 @@
 
       <!-- NUEVA -->
       <section id="nueva" class="section" style="display:none">
-        <h2>Nueva solicitud</h2>
+        <h2 data-i18n="new-title">Nueva solicitud</h2>
         <div id="newErr" class="errorbox" style="display:none"></div>
         <div class="grid">
           <div class="card col-8">
             <form id="formNewReq">
               <div class="grid">
                 <div class="col-6">
-                  <label>Tipo de servicio</label>
+                  <label data-i18n="new-kind-label">Tipo de servicio</label>
                   <select name="service_kind" id="selKindNew" required>
-                    <option value="">— selecciona —</option>
+                    <option value="">&mdash; selecciona &mdash;</option>
                     <option value="lodging">lodging</option>
                     <option value="tour">tour</option>
                     <option value="dining">dining</option>
@@ -117,81 +211,94 @@
                   </select>
                 </div>
                 <div class="col-6">
-                  <label>Destino</label>
+                  <label data-i18n="new-dest-label">Destino</label>
                   <select name="destination_id" id="selDestinationNew">
-                    <option value="">— selecciona —</option>
+                    <option value="">&mdash; selecciona &mdash;</option>
                   </select>
                 </div>
                 <div class="col-6">
-                  <label>Servicio (catálogo) — opcional</label>
+                  <label data-i18n="new-catalog-label">Servicio (catálogo) — opcional</label>
                   <select name="catalog_id" id="selServiceNew">
-                    <option value="">— (opcional) —</option>
+                    <option value="">&mdash; (opcional) &mdash;</option>
                   </select>
                 </div>
                 <div class="col-3">
-                  <label>Desde</label>
+                  <label data-i18n="new-from-label">Desde</label>
                   <input type="date" name="start_date">
                 </div>
                 <div class="col-3">
-                  <label>Hasta</label>
+                  <label data-i18n="new-to-label">Hasta</label>
                   <input type="date" name="end_date">
                 </div>
                 <div class="col-3">
-                  <label>Huéspedes</label>
+                  <label data-i18n="new-guests-label">Huéspedes</label>
                   <input type="number" name="guests" min="1">
                 </div>
                 <div class="col-3">
-                  <label>Presupuesto (USD)</label>
+                  <label data-i18n="new-budget-label">Presupuesto (USD)</label>
                   <input type="number" name="budget_usd" step="0.01" min="0">
                 </div>
                 <div class="col-12">
-                  <label>Preferencias alimentarias (opcional)</label>
-                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
+                  <label data-i18n="new-diet-label">Preferencias alimentarias (opcional)</label>
+                  <input name="dietary_notes"
+                         placeholder="Vegano, sin gluten, etc."
+                         data-i18n-ph="new-diet-ph">
                 </div>
                 <div class="col-12">
-                  <label>Intereses (opcional, separa por comas)</label>
-                  <input name="interests" placeholder="playa, cultura, aventura…">
+                  <label data-i18n="new-interests-label">Intereses (opcional, separa por comas)</label>
+                  <input name="interests"
+                         placeholder="playa, cultura, aventura…"
+                         data-i18n-ph="new-interests-ph">
                 </div>
                 <div class="col-12">
-                  <label>Notas</label>
-                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                  <label data-i18n="new-notes-label">Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales" data-i18n-ph="new-notes-ph"></textarea>
                 </div>
               </div>
-              <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Enviar solicitud</button>
+              <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="btn" type="submit" data-i18n="new-btn-send">Enviar solicitud</button>
                 <span id="msgNewReq" class="muted"></span>
               </div>
             </form>
           </div>
           <div class="card col-4">
-            <h3>Ayuda</h3>
-            <p class="muted">Selecciona tipo, destino y (opcional) un servicio del catálogo. Puedes indicar fechas, presupuesto y notas.</p>
+            <h3 data-i18n="new-help-title">Ayuda</h3>
+            <p class="muted" data-i18n="new-help-text">
+              Selecciona tipo, destino y (opcional) un servicio del catálogo. Puedes indicar fechas, presupuesto y notas.
+            </p>
           </div>
         </div>
       </section>
 
       <!-- MIS SOLICITUDES -->
       <section id="mis-solicitudes" class="section" style="display:none">
-        <h2>Mis solicitudes</h2>
+        <h2 data-i18n="my-title">Mis solicitudes</h2>
         <div id="listErr" class="errorbox" style="display:none"></div>
         <div class="card" style="margin-bottom:12px">
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label class="muted">Filtrar estado</label>
+            <label class="muted" data-i18n="my-filter-status">Filtrar estado</label>
             <select id="fltStatusMyReq">
-              <option value="">(todos)</option>
+              <option value="" data-i18n="flt-all">(todos)</option>
               <option>new</option><option>curation</option><option>proposal_sent</option>
               <option>confirmed</option><option>closed</option><option>discarded</option>
             </select>
-            <button class="btn" id="btnLoadMyReq">Cargar</button>
+            <button class="btn" id="btnLoadMyReq" data-i18n="my-btn-load">Cargar</button>
           </div>
         </div>
         <div class="card">
           <div style="overflow:auto">
             <table>
               <thead>
-                <tr><th>Folio</th><th>Servicio</th><th>Destino</th><th>Fecha</th><th>Estado</th><th></th></tr>
+                <tr>
+                  <th data-i18n="tbl-folio">Folio</th>
+                  <th data-i18n="tbl-service">Servicio</th>
+                  <th data-i18n="tbl-destination">Destino</th>
+                  <th data-i18n="tbl-date">Fecha</th>
+                  <th data-i18n="tbl-status">Estado</th>
+                  <th></th>
+                </tr>
               </thead>
-              <tbody id="tblMyReq"><tr><td colspan="6">Cargando…</td></tr></tbody>
+              <tbody id="tblMyReq"><tr><td colspan="6" data-i18n="tbl-loading">Cargando…</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -199,21 +306,21 @@
 
       <!-- EDIT -->
       <section id="solicitud-edit" class="section" style="display:none">
-        <h2>Editar solicitud</h2>
+        <h2 data-i18n="edit-title">Editar solicitud</h2>
         <div id="editErr" class="errorbox" style="display:none"></div>
-        <div class="card" style="margin-bottom:12px;display:flex;gap:10px">
-          <a class="btn" href="#mis-solicitudes">← Volver a Mis solicitudes</a>
-          <button class="btn" id="btnCancelReq">Cancelar solicitud</button>
+        <div class="card" style="margin-bottom:12px;display:flex;gap:10px;flex-wrap:wrap">
+          <a class="btn" href="#mis-solicitudes" data-i18n="edit-back">← Volver a Mis solicitudes</a>
+          <button class="btn" id="btnCancelReq" data-i18n="edit-cancel">Cancelar solicitud</button>
         </div>
 
         <div class="grid">
           <div class="card col-6">
-            <h3>Formulario</h3>
+            <h3 data-i18n="edit-form-title">Formulario</h3>
             <form id="formReqEdit">
               <input type="hidden" name="id">
               <div class="grid">
                 <div class="col-6">
-                  <label>Tipo de servicio</label>
+                  <label data-i18n="new-kind-label">Tipo de servicio</label>
                   <select name="service_kind" required>
                     <option value="lodging">lodging</option>
                     <option value="tour">tour</option>
@@ -222,67 +329,71 @@
                   </select>
                 </div>
                 <div class="col-6">
-                  <label>Destino</label>
+                  <label data-i18n="new-dest-label">Destino</label>
                   <select name="destination_id" id="selDestinationEdit">
-                    <option value="">— sin destino —</option>
+                    <option value="">&mdash; sin destino &mdash;</option>
                   </select>
                 </div>
                 <div class="col-12">
-                  <label>Servicio (catálogo) — opcional</label>
+                  <label data-i18n="new-catalog-label">Servicio (catálogo) — opcional</label>
                   <select name="catalog_id" id="selServiceEdit">
-                    <option value="">— (opcional) —</option>
+                    <option value="">&mdash; (opcional) &mdash;</option>
                   </select>
                 </div>
                 <div class="col-6">
-                  <label>Desde</label>
+                  <label data-i18n="new-from-label">Desde</label>
                   <input type="date" name="start_date">
                 </div>
                 <div class="col-6">
-                  <label>Hasta</label>
+                  <label data-i18n="new-to-label">Hasta</label>
                   <input type="date" name="end_date">
                 </div>
                 <div class="col-6">
-                  <label>Huéspedes</label>
+                  <label data-i18n="new-guests-label">Huéspedes</label>
                   <input type="number" name="guests" min="1">
                 </div>
                 <div class="col-6">
-                  <label>Presupuesto (USD)</label>
+                  <label data-i18n="new-budget-label">Presupuesto (USD)</label>
                   <input type="number" name="budget_usd" step="0.01" min="0">
                 </div>
                 <div class="col-12">
-                  <label>Preferencias alimentarias</label>
-                  <input name="dietary_notes" placeholder="Vegano, sin gluten, etc.">
+                  <label data-i18n="new-diet-label">Preferencias alimentarias</label>
+                  <input name="dietary_notes"
+                         placeholder="Vegano, sin gluten, etc."
+                         data-i18n-ph="new-diet-ph">
                 </div>
                 <div class="col-12">
-                  <label>Intereses (separa por comas)</label>
-                  <input name="interests" placeholder="playa, cultura, aventura…">
+                  <label data-i18n="new-interests-label">Intereses (separa por comas)</label>
+                  <input name="interests"
+                         placeholder="playa, cultura, aventura…"
+                         data-i18n-ph="new-interests-ph">
                 </div>
                 <div class="col-12">
-                  <label>Notas</label>
-                  <textarea name="notes" rows="3" placeholder="Detalles adicionales"></textarea>
+                  <label data-i18n="new-notes-label">Notas</label>
+                  <textarea name="notes" rows="3" placeholder="Detalles adicionales" data-i18n-ph="new-notes-ph"></textarea>
                 </div>
               </div>
-              <div style="margin-top:12px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Guardar cambios</button>
+              <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="btn" type="submit" data-i18n="edit-save">Guardar cambios</button>
                 <span id="msgReqEdit" class="muted"></span>
               </div>
             </form>
           </div>
 
           <div class="card col-6">
-            <h3>Resumen</h3>
+            <h3 data-i18n="edit-summary-title">Resumen</h3>
             <div id="reqPreview" class="muted">—</div>
             <hr style="border:none;border-top:1px solid rgba(255,255,255,.08);margin:16px 0"/>
-            <h3>Adjuntos</h3>
+            <h3 data-i18n="edit-attachments-title">Adjuntos</h3>
             <ul id="attachmentsList" style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
               <li class="muted">—</li>
             </ul>
             <form id="formUpload" style="margin-top:12px">
               <input type="hidden" name="request_id" id="uploadRequestId">
-              <label>Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
+              <label data-i18n="upload-label">Subir archivo (PDF/JPG/PNG, máx 10MB)</label>
               <input type="file" name="file" accept="application/pdf,image/png,image/jpeg">
-              <div style="margin-top:10px;display:flex;gap:10px;align-items:center">
-                <button class="btn" type="submit">Subir</button>
+              <div style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="btn" type="submit" data-i18n="upload-btn">Subir</button>
                 <span id="msgUpload" class="muted"></span>
               </div>
             </form>
@@ -290,14 +401,14 @@
         </div>
       </section>
 
-            <!-- CALENDARIO (MOVER ADENTRO DE MAIN) -->
+      <!-- CALENDARIO -->
       <section id="calendario" class="section" style="display:none">
-        <h2>Mi calendario</h2>
+        <h2 data-i18n="cal-title">Mi calendario</h2>
         <div class="card" style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <button class="btn" id="calPrev">◀</button>
           <div id="calTitle" style="font-weight:700"></div>
           <button class="btn" id="calNext">▶</button>
-          <button class="btn" id="calToday" style="margin-left:auto">Hoy</button>
+          <button class="btn" id="calToday" style="margin-left:auto" data-i18n="cal-today">Hoy</button>
         </div>
         <div class="card">
           <div id="calGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px"></div>
@@ -308,10 +419,6 @@
 
   <div id="toast"></div>
 
-    </main>
-  </div>
-
-
   <script>
     // ===== Helpers básicos
     const $  = (s, el=document) => el.querySelector(s);
@@ -320,7 +427,8 @@
     const fmtDate = s => { if(!s) return '—'; const d=new Date(s); return isNaN(d)? String(s) : d.toISOString().replace('T',' ').slice(0,16); };
     const splitInterests = s => Array.isArray(s)? s : String(s||'').split(',').map(x=>x.trim()).filter(Boolean);
     const fillSelect = (el, rows, {value='id', label='name', withEmpty=true, emptyText='— selecciona —'}={})=>{
-      if(!el) return; el.innerHTML=''; if(withEmpty){ const o=document.createElement('option'); o.value=''; o.textContent=emptyText; el.appendChild(o); }
+      if(!el) return; el.innerHTML='';
+      if(withEmpty){ const o=document.createElement('option'); o.value=''; o.textContent=emptyText; el.appendChild(o); }
       rows.forEach(r=>{ const o=document.createElement('option'); o.value=r[value]??''; o.textContent=r[label]??r[value]??''; el.appendChild(o); });
     };
 
@@ -339,10 +447,8 @@
     // ===== UI: mostrar/ocultar secciones sin redirigir páginas
     function showOnly(id){
       $$('.section').forEach(s => s.style.display = (s.id===id ? 'block' : 'none'));
-      // Sidebar visible solo si NO estamos en login
       $('#leftNav').style.display = (id==='login') ? 'none' : 'grid';
       $('#btnLogout').style.display = (id==='login') ? 'none' : 'inline-flex';
-      // Nav activo
       $$('#leftNav a').forEach(a=> a.classList.toggle('active', a.getAttribute('href')==='#'+id));
     }
 
@@ -351,7 +457,6 @@
       const [dests, servs] = await Promise.allSettled([apiGet('public-destinations'), apiGet('public-services')]);
       state.destinations = dests.value?.ok ? (dests.value.items||[]) : [];
       state.services     = servs.value?.ok ? (servs.value.items||[]) : [];
-      // rellenar "Nueva"
       fillSelect($('#selDestinationNew'), state.destinations);
       refreshServiceSelectFor('#selServiceNew', $('#selKindNew')?.value || '');
     }
@@ -379,6 +484,10 @@
       const chips = $('#chipsMine'); chips.innerHTML='';
       Object.entries(counts).forEach(([k,v])=>{ const s=document.createElement('span'); s.className='chip'; s.textContent=`${k}: ${v}`; chips.appendChild(s); });
       const tb = $('#tblMyRecent'); tb.innerHTML='';
+      if(items.length===0){
+        tb.innerHTML='<tr><td colspan="6">Sin resultados</td></tr>';
+        return;
+      }
       items.slice(0,10).forEach(it=>{
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -387,7 +496,7 @@
           <td>${it.destino || '—'}</td>
           <td>${it.current_status || 'new'}</td>
           <td>${fmtDate(it.created_at || it.start_date)}</td>
-          <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}">Editar</a></td>
+          <td><a class="btn btn-small" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}" data-i18n="btn-edit-row">Editar</a></td>
         `;
         tb.appendChild(tr);
       });
@@ -425,7 +534,7 @@
         toast('Solicitud creada');
         f.reset();
         await Promise.all([loadHome(), loadMisSolicitudes()]);
-        location.hash='#mis-solicitudes'; // sigue siendo MISMA PÁGINA, solo cambia sección
+        location.hash='#mis-solicitudes';
       });
     }
 
@@ -453,7 +562,7 @@
           <td>${it.destino || '—'}</td>
           <td>${fmtDate(it.created_at || it.start_date)}</td>
           <td>${it.current_status || 'new'}</td>
-          <td><a class="btn" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}">Editar</a></td>
+          <td><a class="btn btn-small" href="#solicitudes/edit?id=${encodeURIComponent(it.id)}" data-i18n="btn-edit-row">Editar</a></td>
         `;
         tb.appendChild(tr);
       });
@@ -552,7 +661,7 @@
               <div><b>${label}</b></div>
               <div class="muted">${a.mime_type} · ${(a.size_bytes??0)} bytes · ${fmtDate(a.created_at)}</div>
             </div>
-            ${a.storage_url? `<a class="btn" href="${a.storage_url}" target="_blank" rel="noopener">Ver</a>`:''}
+            ${a.storage_url? `<a class="btn btn-small" href="${a.storage_url}" target="_blank" rel="noopener" data-i18n="upload-view">Ver</a>`:''}
           </div>
         `;
         ul.appendChild(li);
@@ -620,14 +729,113 @@
       });
     }
 
-    // ===== Router de secciones (mismo HTML)
+    // ===== Calendario
+    const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+    const calState = { y: null, m: null, events: [] }; // m: 1..12
+    function firstDayOfMonth(y,m){ return new Date(Date.UTC(y,m-1,1)); }
+    function daysInMonth(y,m){ return new Date(Date.UTC(y,m,0)).getUTCDate(); }
+    function groupEventsByDay(events){
+      const map = {};
+      for(const ev of events){
+        const sd = new Date(ev.start || ev.end || Date.now());
+        const key = sd.toISOString().slice(0,10);
+        (map[key] = map[key] || []).push(ev);
+      }
+      return map;
+    }
+    function renderCalendarGrid(){
+      const title = $('#calTitle');
+      title.textContent = `${monthNames[calState.m-1]} ${calState.y}`;
+      const grid = $('#calGrid'); grid.innerHTML='';
+      const fd = firstDayOfMonth(calState.y, calState.m);
+      const dim = daysInMonth(calState.y, calState.m);
+      const labels = ['L','M','X','J','V','S','D'];
+      for(const l of labels){
+        const h = document.createElement('div');
+        h.textContent = l;
+        h.style.cssText = 'text-align:center;color:#9aa3b2;font-weight:600';
+        grid.appendChild(h);
+      }
+      let offset = fd.getUTCDay(); if (offset===0) offset = 7;
+      for(let i=1; i<offset; i++){
+        const d = document.createElement('div');
+        d.className='muted';
+        grid.appendChild(d);
+      }
+      const byDay = groupEventsByDay(calState.events);
+      for(let day=1; day<=dim; day++){
+        const cell = document.createElement('div');
+        cell.style.cssText = 'border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;min-height:90px;background:#161622;';
+        const dstr = `${calState.y}-${String(calState.m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const head = document.createElement('div');
+        head.textContent = day;
+        head.style.cssText='font-weight:700;margin-bottom:6px';
+        cell.appendChild(head);
+        const evs = byDay[dstr] || [];
+        if(evs.length===0){
+          const p = document.createElement('div');
+          p.className='muted';
+          p.textContent='—';
+          cell.appendChild(p);
+        } else {
+          evs.slice(0,4).forEach(ev=>{
+            const tag = document.createElement('div');
+            tag.style.cssText='font-size:12px;margin:2px 0;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.12)';
+            tag.textContent = `${ev.title} (${ev.status})`;
+            cell.appendChild(tag);
+          });
+          if (evs.length>4) {
+            const more = document.createElement('div');
+            more.className='muted';
+            more.textContent = `+${evs.length-4} más…`;
+            cell.appendChild(more);
+          }
+        }
+        grid.appendChild(cell);
+      }
+    }
+    async function fetchClientCalendar(y,m){
+      const res = await fetch('/.netlify/functions/api?' + new URLSearchParams({ op:'client-calendar', year:String(y), month:String(m) }),
+        { headers: { ...(getToken()? { Authorization:'Bearer '+getToken()} : {}) }});
+      const data = await res.json();
+      if(!data.ok){ toast(data.error||'Error cargando calendario'); return []; }
+      return data.items || [];
+    }
+    async function loadClientCalendar(){
+      const now = new Date();
+      calState.y = calState.y || now.getUTCFullYear();
+      calState.m = calState.m || (now.getUTCMonth()+1);
+      calState.events = await fetchClientCalendar(calState.y, calState.m);
+      renderCalendarGrid();
+    }
+    function bindCalendarNav(){
+      $('#calPrev').onclick = async ()=>{
+        calState.m--; if(calState.m<=0){ calState.m=12; calState.y--; }
+        calState.events = await fetchClientCalendar(calState.y, calState.m);
+        renderCalendarGrid();
+      };
+      $('#calNext').onclick = async ()=>{
+        calState.m++; if(calState.m>=13){ calState.m=1; calState.y++; }
+        calState.events = await fetchClientCalendar(calState.y, calState.m);
+        renderCalendarGrid();
+      };
+      $('#calToday').onclick = async ()=>{
+        const now = new Date();
+        calState.y = now.getUTCFullYear();
+        calState.m = now.getUTCMonth()+1;
+        calState.events = await fetchClientCalendar(calState.y, calState.m);
+        renderCalendarGrid();
+      };
+    }
+
+    // ===== Router SPA
     async function router(){
       const hash = location.hash || '#home';
       const needAuth = hash !== '#login';
       const token = getToken();
 
       if (needAuth && !token) { showOnly('login'); return; }
-      if (!needAuth && token) { // estás logueado y entraste a #login a propósito
+      if (!needAuth && token) {
         $('#leftNav').style.display = 'grid';
       }
 
@@ -638,12 +846,11 @@
         return;
       }
       if (hash === '#calendario'){
-  showOnly('calendario');
-  bindCalendarNav();
-  await loadClientCalendar();
-  return;
-}
-
+        showOnly('calendario');
+        bindCalendarNav();
+        await loadClientCalendar();
+        return;
+      }
       if (hash === '#nueva'){
         showOnly('nueva');
         await prefetchRefs(); bindNueva(); return;
@@ -673,16 +880,15 @@
       state.me = r.user || null;
       $('#who').textContent = r.user ? `Cliente: ${r.user.full_name || r.user.email}` : '';
       toast('Bienvenido');
-      location.hash = '#home'; // MISMA PÁGINA, cambiamos sección
+      location.hash = '#home';
     });
 
     $('#btnLogout')?.addEventListener('click', ()=>{
       clearToken();
       state.me = null; $('#who').textContent = '';
-      location.hash = '#login'; // MISMA PÁGINA
+      location.hash = '#login';
     });
 
-    // Enlaces del nav: aseguro que no naveguen fuera
     $$('#leftNav a').forEach(a=>{
       a.addEventListener('click', (ev)=>{
         const href = a.getAttribute('href') || '#home';
@@ -690,7 +896,6 @@
       });
     });
 
-    // Init
     (async ()=>{
       const t = getToken();
       if (t) { $('#leftNav').style.display='grid'; $('#btnLogout').style.display='inline-flex'; }
@@ -700,128 +905,166 @@
       await router();
     })();
 
+    // ===== I18N =====
+    const translations = {
+      es: {
+        "brand-client":"Concierium — CLIENTE (SPA)",
+        "btn-logout":"Salir",
+        "nav-home":"Home",
+        "nav-new":"Nueva solicitud",
+        "nav-my-requests":"Mis solicitudes",
+        "nav-calendar":"Calendario",
 
-  // ==== Calendario cliente (render simple sin librerías) ====
-  const monthNames = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio",
-                      "Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+        "login-title":"Iniciar sesión",
+        "login-email-label":"Email",
+        "login-email-ph":"tu@correo.com",
+        "login-password-label":"Contraseña",
+        "login-password-ph":"••••••••",
+        "login-btn":"Entrar",
+        "login-subtitle":"Acceso al área de cliente",
 
-  const calState = { y: null, m: null, events: [] }; // m: 1..12
+        "home-title":"Resumen",
+        "home-total-label":"Total mis solicitudes:",
+        "home-btn-refresh":"Refrescar",
+        "home-recent-title":"Recientes",
 
-  function firstDayOfMonth(y,m){ return new Date(Date.UTC(y,m-1,1)); }
-  function daysInMonth(y,m){ return new Date(Date.UTC(y,m,0)).getUTCDate(); }
+        "tbl-folio":"Folio",
+        "tbl-service":"Servicio",
+        "tbl-destination":"Destino",
+        "tbl-status":"Estado",
+        "tbl-created":"Creada",
+        "tbl-date":"Fecha",
+        "tbl-loading":"Cargando…",
 
-  function groupEventsByDay(events){
-    const map = {};
-    for(const ev of events){
-      const sd = new Date(ev.start || ev.end || Date.now());
-      const key = sd.toISOString().slice(0,10);
-      (map[key] = map[key] || []).push(ev);
-    }
-    return map;
-  }
+        "new-title":"Nueva solicitud",
+        "new-kind-label":"Tipo de servicio",
+        "new-dest-label":"Destino",
+        "new-catalog-label":"Servicio (catálogo) — opcional",
+        "new-from-label":"Desde",
+        "new-to-label":"Hasta",
+        "new-guests-label":"Huéspedes",
+        "new-budget-label":"Presupuesto (USD)",
+        "new-diet-label":"Preferencias alimentarias (opcional)",
+        "new-diet-ph":"Vegano, sin gluten, etc.",
+        "new-interests-label":"Intereses (opcional, separa por comas)",
+        "new-interests-ph":"playa, cultura, aventura…",
+        "new-notes-label":"Notas",
+        "new-notes-ph":"Detalles adicionales",
+        "new-btn-send":"Enviar solicitud",
+        "new-help-title":"Ayuda",
+        "new-help-text":"Selecciona tipo, destino y (opcional) un servicio del catálogo. Puedes indicar fechas, presupuesto y notas.",
 
-  function renderCalendarGrid(){
-    const title = $('#calTitle');
-    title.textContent = `${monthNames[calState.m-1]} ${calState.y}`;
+        "my-title":"Mis solicitudes",
+        "my-filter-status":"Filtrar estado",
+        "flt-all":"(todos)",
+        "my-btn-load":"Cargar",
 
-    const grid = $('#calGrid'); grid.innerHTML='';
-    const fd = firstDayOfMonth(calState.y, calState.m);
-    const dim = daysInMonth(calState.y, calState.m);
+        "edit-title":"Editar solicitud",
+        "edit-back":"← Volver a Mis solicitudes",
+        "edit-cancel":"Cancelar solicitud",
+        "edit-form-title":"Formulario",
+        "edit-save":"Guardar cambios",
+        "edit-summary-title":"Resumen",
+        "edit-attachments-title":"Adjuntos",
+        "upload-label":"Subir archivo (PDF/JPG/PNG, máx 10MB)",
+        "upload-btn":"Subir",
+        "upload-view":"Ver",
+        "btn-edit-row":"Editar",
 
-    // Encabezado días
-    const labels = ['L','M','X','J','V','S','D'];
-    for(const l of labels){
-      const h = document.createElement('div');
-      h.textContent = l;
-      h.style.cssText = 'text-align:center;color:#9aa3b2;font-weight:600';
-      grid.appendChild(h);
-    }
+        "cal-title":"Mi calendario",
+        "cal-today":"Hoy"
+      },
+      en: {
+        "brand-client":"Concierium — CLIENT AREA (SPA)",
+        "btn-logout":"Logout",
+        "nav-home":"Home",
+        "nav-new":"New request",
+        "nav-my-requests":"My requests",
+        "nav-calendar":"Calendar",
 
-    // offset (que empiece en lunes)
-    let offset = fd.getUTCDay(); // 0=Dom
-    if (offset===0) offset = 7;
-    for(let i=1; i<offset; i++){
-      const d = document.createElement('div');
-      d.className='muted';
-      grid.appendChild(d);
-    }
+        "login-title":"Sign in",
+        "login-email-label":"Email",
+        "login-email-ph":"you@email.com",
+        "login-password-label":"Password",
+        "login-password-ph":"••••••••",
+        "login-btn":"Sign in",
+        "login-subtitle":"Access to client area",
 
-    const byDay = groupEventsByDay(calState.events);
+        "home-title":"Overview",
+        "home-total-label":"Total my requests:",
+        "home-btn-refresh":"Refresh",
+        "home-recent-title":"Recent",
 
-    for(let day=1; day<=dim; day++){
-      const cell = document.createElement('div');
-      cell.style.cssText = 'border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px;min-height:90px;background:#161622;';
-      const dstr = `${calState.y}-${String(calState.m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const head = document.createElement('div');
-      head.textContent = day;
-      head.style.cssText='font-weight:700;margin-bottom:6px';
-      cell.appendChild(head);
+        "tbl-folio":"ID",
+        "tbl-service":"Service",
+        "tbl-destination":"Destination",
+        "tbl-status":"Status",
+        "tbl-created":"Created",
+        "tbl-date":"Date",
+        "tbl-loading":"Loading…",
 
-      const evs = byDay[dstr] || [];
-      if(evs.length===0){
-        const p = document.createElement('div');
-        p.className='muted';
-        p.textContent='—';
-        cell.appendChild(p);
-      } else {
-        evs.slice(0,4).forEach(ev=>{
-          const tag = document.createElement('div');
-          tag.style.cssText='font-size:12px;margin:2px 0;padding:4px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.12)';
-          tag.textContent = `${ev.title} (${ev.status})`;
-          cell.appendChild(tag);
-        });
-        if (evs.length>4) {
-          const more = document.createElement('div');
-          more.className='muted';
-          more.textContent = `+${evs.length-4} más…`;
-          cell.appendChild(more);
-        }
+        "new-title":"New request",
+        "new-kind-label":"Service type",
+        "new-dest-label":"Destination",
+        "new-catalog-label":"Catalog service — optional",
+        "new-from-label":"From",
+        "new-to-label":"To",
+        "new-guests-label":"Guests",
+        "new-budget-label":"Budget (USD)",
+        "new-diet-label":"Dietary preferences (optional)",
+        "new-diet-ph":"Vegan, gluten-free, etc.",
+        "new-interests-label":"Interests (optional, comma-separated)",
+        "new-interests-ph":"beach, culture, adventure…",
+        "new-notes-label":"Notes",
+        "new-notes-ph":"Additional details",
+        "new-btn-send":"Submit request",
+        "new-help-title":"Help",
+        "new-help-text":"Select type, destination and (optionally) a catalog service. You can specify dates, budget and notes.",
+
+        "my-title":"My requests",
+        "my-filter-status":"Filter by status",
+        "flt-all":"(all)",
+        "my-btn-load":"Load",
+
+        "edit-title":"Edit request",
+        "edit-back":"← Back to My requests",
+        "edit-cancel":"Cancel request",
+        "edit-form-title":"Form",
+        "edit-save":"Save changes",
+        "edit-summary-title":"Summary",
+        "edit-attachments-title":"Attachments",
+        "upload-label":"Upload file (PDF/JPG/PNG, max 10MB)",
+        "upload-btn":"Upload",
+        "upload-view":"View",
+        "btn-edit-row":"Edit",
+
+        "cal-title":"My calendar",
+        "cal-today":"Today"
       }
+    };
 
-      grid.appendChild(cell);
+    function setLanguage(lang){
+      const dict = translations[lang] || translations.es;
+      document.querySelectorAll('[data-i18n]').forEach(el=>{
+        const key = el.getAttribute('data-i18n');
+        if(dict[key]) el.textContent = dict[key];
+      });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+        const key = el.getAttribute('data-i18n-ph');
+        if(dict[key]) el.setAttribute('placeholder', dict[key]);
+      });
+      localStorage.setItem('concierium-client-lang', lang);
+      // toggle active visual si quieres (opcional)
     }
-  }
 
-  async function fetchClientCalendar(y,m){
-    const res = await fetch('/.netlify/functions/api?' + new URLSearchParams({ op:'client-calendar', year:String(y), month:String(m) }),
-      { headers: { ...(getToken()? { Authorization:'Bearer '+getToken()} : {}) }});
-    const data = await res.json();
-    if(!data.ok){ toast(data.error||'Error cargando calendario'); return []; }
-    return data.items || [];
-  }
+    $$('.lang-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        setLanguage(btn.dataset.lang);
+      });
+    });
 
-  async function loadClientCalendar(){
-    // set default month to current
-    const now = new Date();
-    calState.y = calState.y || now.getUTCFullYear();
-    calState.m = calState.m || (now.getUTCMonth()+1);
-    calState.events = await fetchClientCalendar(calState.y, calState.m);
-    renderCalendarGrid();
-  }
-
-  function bindCalendarNav(){
-    $('#calPrev').onclick = async ()=>{
-      calState.m--; if(calState.m<=0){ calState.m=12; calState.y--; }
-      calState.events = await fetchClientCalendar(calState.y, calState.m);
-      renderCalendarGrid();
-    };
-    $('#calNext').onclick = async ()=>{
-      calState.m++; if(calState.m>=13){ calState.m=1; calState.y++; }
-      calState.events = await fetchClientCalendar(calState.y, calState.m);
-      renderCalendarGrid();
-    };
-    $('#calToday').onclick = async ()=>{
-      const now = new Date();
-      calState.y = now.getUTCFullYear();
-      calState.m = now.getUTCMonth()+1;
-      calState.events = await fetchClientCalendar(calState.y, calState.m);
-      renderCalendarGrid();
-    };
-  }
-
-  // Integra en tu router SPA:
-  // if (hash === '#calendario') { showOnly('calendario'); bindCalendarNav(); await loadClientCalendar(); return; }
-
+    // init idioma
+    setLanguage(localStorage.getItem('concierium-client-lang') || 'es');
   </script>
 </body>
 </html>
