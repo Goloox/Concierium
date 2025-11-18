@@ -1,220 +1,761 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Concierium | Servicios de Lujo</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Concierium | Concierge Services</title>
 
-  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet" />
-  <link rel="stylesheet" href="https://preview.colorlib.com/theme/glint/css/base.css" />
-  <link rel="stylesheet" href="https://preview.colorlib.com/theme/glint/css/vendor.css" />
-  <link rel="stylesheet" href="https://preview.colorlib.com/theme/glint/css/main.css" />
-  <link rel="icon" href="img/logo.png" type="image/png" />
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
 
-  <style>
-    :root { --header-h: 72px; }
-    * { box-sizing: border-box; }
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 
-    /* ===== HEADER ===== */
-    .s-header {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      height: var(--header-h);
-      display: flex;
-      align-items: center;
-      padding: 0 24px;
-      z-index: 1000;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(10px);
-    }
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
-    .header-logo img {
-      height: 42px;
-      width: auto;
-    }
+    <!-- Favicon -->
+    <link rel="icon" href="img/logo.png" type="image/png" />
 
-    .header-center {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-    }
+    <style>
+        :root {
+            --brand: #00c9a7;
+            --dark: #050608;
+        }
 
-    .header-nav {
-      list-style: none;
-      display: flex;
-      gap: 1.5rem;
-      margin: 0;
-      padding: 0;
-    }
+        * {
+            box-sizing: border-box;
+        }
 
-    .header-nav a {
-      color: #fff;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      transition: color 0.3s ease;
-      font-size: 0.95rem;
-    }
+        body {
+            margin: 0;
+            font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+            background-color: #050608;
+            color: #111;
+        }
 
-    .header-nav a:hover {
-      color: #f5a623;
-    }
+        /* ===== NAVBAR ===== */
+        .main-nav {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
 
-    .header-menu-toggle {
-      display: none;
-      color: #fff;
-      border: 2px solid #fff;
-      background: none;
-      padding: 6px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 600;
-    }
+        .navbar-brand img {
+            height: 40px;
+            width: auto;
+        }
 
-    /* ===== HERO ===== */
-    .s-home {
-      background: url("img/fondo.png") center/cover no-repeat fixed;
-      min-height: 100vh;
-      padding-top: var(--header-h);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      text-align: center;
-      position: relative;
-    }
+        .navbar-nav .nav-link {
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
 
-    .s-home .overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-    }
+        .navbar-nav .nav-link.active,
+        .navbar-nav .nav-link:hover {
+            color: var(--brand) !important;
+        }
 
-    .home-content {
-      position: relative;
-      z-index: 2;
-      max-width: 900px;
-      padding: 1rem;
-    }
+        /* ===== HERO ===== */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
 
-    .home-content__main h3 {
-      font-weight: 400;
-      font-size: 1.1rem;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.8rem;
-    }
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, rgba(0,0,0,0.68), rgba(0,0,0,0.35));
+        }
 
-    .home-content__main h1 {
-      font-size: 2.8rem;
-      line-height: 1.2;
-      font-weight: 600;
-      margin-bottom: 1.8rem;
-    }
+        .hero-content {
+            position: relative;
+            text-align: center;
+            padding: 4rem 1.5rem;
+        }
 
-    .home-content__buttons {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
+        .hero h1 {
+            letter-spacing: 0.15em;
+        }
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 180px;
-      padding: 0.9rem 1.3rem;
-      border: 2px solid #fff;
-      color: #fff;
-      text-decoration: none;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      border-radius: 6px;
-      transition: all 0.3s ease;
-    }
+        .btn-cta {
+            background: var(--brand);
+            border: none;
+            border-radius: 999px;
+            padding: 0.8rem 2.4rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
 
-    .btn:hover {
-      background: #fff;
-      color: #000;
-    }
+        .btn-cta:hover {
+            background: #00a58a;
+        }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 900px) {
-      .s-home { background-attachment: scroll; }
-    }
+        /* ===== SECTIONS ===== */
+        section {
+            background-color: #f8f9fb;
+        }
 
-    @media (max-width: 820px) {
-      .header-menu-toggle { display: block; }
-      .header-center { position: fixed; top: var(--header-h); left: 0; right: 0; }
-      .header-nav-wrap { display: none; }
-      .header-nav-wrap.active {
-        display: block;
-        background: rgba(0,0,0,0.95);
-        padding: 1.5rem 0;
-        text-align: center;
-      }
-      .header-nav {
-        flex-direction: column;
-        gap: 1.2rem;
-      }
-    }
-  </style>
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .section-title h2 {
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .section-title hr {
+            width: 80px;
+            margin: 0.5rem auto 0;
+            border-top: 3px solid var(--brand);
+            opacity: 1;
+        }
+
+        /* ===== DESTINATION CARDS ===== */
+        .dest-card {
+            position: relative;
+            border-radius: 18px;
+            overflow: hidden;
+            min-height: 240px;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: flex-end;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dest-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+        }
+
+        .dest-card .dest-text {
+            position: relative;
+            padding: 1.3rem 1.5rem;
+            color: #fff;
+        }
+
+        .dest-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .dest-card small {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .dest-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        /* ===== SERVICE CARDS ===== */
+        #services {
+            background-color: #ffffff;
+        }
+
+        .serv-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 1.8rem 1.5rem;
+            box-shadow: 0 14px 45px rgba(0, 0, 0, 0.08);
+            text-align: left;
+        }
+
+        .serv-card i {
+            font-size: 2rem;
+            color: var(--brand);
+            margin-bottom: 1rem;
+        }
+
+        .serv-card h5 {
+            font-weight: 600;
+            margin-bottom: 0.6rem;
+        }
+
+        .serv-card p {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 0;
+        }
+
+        /* ===== TABS SECTION ===== */
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border-radius: 999px 999px 0 0;
+            padding: 0.7rem 1.4rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--brand);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .nav-tabs {
+            border-bottom: 0;
+        }
+
+        /* ===== ABOUT / WHO WE ARE ===== */
+        .who-img {
+            object-fit: cover;
+            max-height: 420px;
+        }
+
+        /* ===== TESTIMONIALS ===== */
+        .testimonial {
+            background: linear-gradient(135deg, #0b1220, #1a1f35);
+            padding: 3rem 1.5rem;
+        }
+
+        blockquote {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #e6e9ff;
+        }
+
+        /* ===== CONTACT ===== */
+        .contact-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 1.8rem 1.5rem;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.07);
+        }
+
+        .contact-card .form-control {
+            border-radius: 999px;
+            font-size: 0.95rem;
+        }
+
+        .contact-card textarea.form-control {
+            border-radius: 18px;
+        }
+
+        .btn-dark {
+            border-radius: 999px;
+            font-size: 0.9rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        [data-animate] {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: all 0.7s ease;
+        }
+
+        [data-animate].in-view {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* ===== UTILITIES ===== */
+        main {
+            background-color: #f8f9fb;
+        }
+
+        @media (max-width: 767.98px) {
+            .hero {
+                min-height: 85vh;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
-<body id="top">
+<body>
 
-  <!-- ===== HEADER ===== -->
-  <header class="s-header">
-    <div class="header-logo">
-      <a href="#top"><img src="img/logo.png" alt="Concierium Logo" /></a>
-    </div>
+    <!-- ===== NAVBAR ===== -->
+    <nav class="navbar navbar-expand-lg navbar-dark main-nav fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#top">
+                <img src="img/logo.png" alt="Concierium Logo" />
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" href="#top">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#destinations">Destinations</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#services">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#aboutTabs">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#tab-contact">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <div class="header-center">
-      <nav class="header-nav-wrap" id="navMenu">
-        <ul class="header-nav">
-          <li><a href="#home">Inicio</a></li>
-          <li><a href="#history">Historia</a></li>
-          <li><a href="#about">Sobre Nosotros</a></li>
-          <li><a href="#services">Servicios</a></li>
-          <li><a href="#team">Equipo</a></li>
-          <li><a href="#opinions">Opiniones</a></li>
-          <li><a href="#faq">FAQ</a></li>
-          <li><a href="#contact">Contacto</a></li>
-        </ul>
-      </nav>
-    </div>
+    <!-- ===== HERO ===== -->
+    <header id="top" class="hero" style="background-image:url('images/Arenal.jpg')">
+        <div class="hero-content container" data-animate="fade-up">
+            <h1 class="display-4 fw-semibold" data-i18n="hero-title">
+                CONCIERGE SERVICES
+            </h1>
+            <p class="lead mx-auto" style="max-width:720px;" data-i18n="hero-subtitle">
+                Experience the ultimate in personalized service across our exclusive destinations
+            </p>
+            <a href="#destinations"
+               class="btn btn-cta mt-3"
+               data-i18n="hero-cta">
+                START YOUR EXPERIENCE
+            </a>
+        </div>
+    </header>
 
-    <button class="header-menu-toggle" id="menuToggle">Menú</button>
-  </header>
+    <main>
+        <!-- ===== DESTINATIONS ===== -->
+        <section id="destinations" class="container py-5">
+            <div class="section-title">
+                <h2 data-i18n="home-destinations-title">Our Exclusive Destinations</h2>
+                <hr />
+            </div>
+            <div class="row g-4">
+                <!-- Costa Rica -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/tucan.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-cr-title">Costa Rica</h5>
+                            <small data-i18n="dest-card-cr-sub">
+                                Discover pristine beaches, volcanoes, and lush tropical forests
+                            </small>
+                        </div>
+                    </a>
+                </div>
+                <!-- Riviera Maya -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/Riviera.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-riv-title">Riviera Maya, Mexico</h5>
+                            <small data-i18n="dest-card-riv-sub">
+                                Experience the allure of Caribbean coastlines and Mayan culture
+                            </small>
+                        </div>
+                    </a>
+                </div>
+                <!-- Turks And Caicos -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/providenciales.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-tc-title">Turks and Caicos</h5>
+                            <small data-i18n="dest-card-tc-sub">
+                                Indulge in the world's most spectacular turquoise waters
+                            </small>
+                        </div>
+                    </a>
+                </div>
+                <!-- Miami -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/miami.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-miami-title">Miami</h5>
+                            <small data-i18n="dest-card-miami-sub">
+                                United States premier beach destination
+                            </small>
+                        </div>
+                    </a>
+                </div>
+                <!-- Bahamas -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/bahamas.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-bahamas-title">Bahamas</h5>
+                            <small data-i18n="dest-card-bahamas-sub">
+                                Exclusive beachfront paradise
+                            </small>
+                        </div>
+                    </a>
+                </div>
+                <!-- Future Destinations -->
+                <div class="col-md-4">
+                    <a href="#"
+                       class="dest-card text-decoration-none d-block"
+                       style="background-image:url('images/future.jpg')"
+                       data-animate="zoom-in">
+                        <div class="dest-text">
+                            <h5 data-i18n="dest-card-future-title">Future destinations</h5>
+                            <small data-i18n="dest-card-future-sub">
+                                Our next places
+                            </small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
 
-  <!-- ===== HERO ===== -->
- <!-- ===== HERO ===== -->
-<section id="home" class="s-home">
-  <div class="overlay"></div>
+        <!-- ===== SERVICES ===== -->
+        <section id="services" class="container py-5">
+            <div class="section-title">
+                <h2 data-i18n="home-services-title">Our Premium Services</h2>
+                <hr />
+            </div>
+            <div class="row g-4">
 
-  <div class="home-content">
-    <div class="home-content__main">
-      <h3>Bienvenido a <span>Concierium</span></h3>
-      <h1>
-        Gestionamos experiencias exclusivas<br>
-        con lujo, precisión y tecnología.
-      </h1>
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-house-door"></i>
+                        <h5 data-i18n="service-villas-title">Villa Rentals</h5>
+                        <p data-i18n="service-villas-sub">
+                            Exclusive villas in Costa Rica, Riviera Maya, and Turks and Caicos
+                        </p>
+                    </div>
+                </div>
 
-      <div class="home-content__buttons">
-        <a href="signin.html" class="btn btn--primary">Sign In</a>
-        <a href="login.html" class="btn btn--secondary">Login</a>
-      </div>
-    </div>
-  </div>
-</section>
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-egg-fried"></i>
+                        <h5 data-i18n="service-chefs-title">Private Chefs</h5>
+                        <p data-i18n="service-chefs-sub">
+                            Personalized culinary experiences in the comfort of your villa
+                        </p>
+                    </div>
+                </div>
 
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-car-front"></i>
+                        <h5 data-i18n="service-transport-title">Transportation</h5>
+                        <p data-i18n="service-transport-sub">
+                            Specialized ground transportation services for a seamless travel
+                        </p>
+                    </div>
+                </div>
 
-  <!-- JS del menú -->
-  <script>
-    const menuToggle = document.getElementById('menuToggle');
-    const navMenu = document.getElementById('navMenu');
-    menuToggle.addEventListener('click', () => {
-      navMenu.classList.toggle('active');
-    });
-  </script>
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-speedometer2"></i>
+                        <h5 data-i18n="service-fasttrack-title">VIP Fast Track</h5>
+                        <p data-i18n="service-fasttrack-sub">
+                            Expedited airport services in San Jose, Guanacaste, and Turks &amp; Caicos
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-tsunami"></i>
+                        <h5 data-i18n="service-yacht-title">Yacht Charters</h5>
+                        <p data-i18n="service-yacht-sub">
+                            Private yacht experiences along spectacular coastlines
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-map"></i>
+                        <h5 data-i18n="service-tours-title">Private Tours</h5>
+                        <p data-i18n="service-tours-sub">
+                            Curated tours and activities tailored to your preferences
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-airplane-engines"></i>
+                        <h5 data-i18n="service-jet-title">Private Jet &amp; Helicopter</h5>
+                        <p data-i18n="service-jet-sub">
+                            Air travel and transfers in Costa Rica
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="serv-card h-100" data-animate="fade-up">
+                        <i class="bi bi-heart-pulse"></i>
+                        <h5 data-i18n="service-spa-title">In-Home Spa Therapy</h5>
+                        <p data-i18n="service-spa-sub">
+                            Relaxing spa treatments in the privacy of your villa
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ===== INFO TABS (About / Reviews / Contact) ===== -->
+        <section class="container py-5">
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs justify-content-center" id="aboutTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active"
+                            id="tab-about-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-about"
+                            type="button"
+                            role="tab"
+                            aria-controls="tab-about"
+                            aria-selected="true"
+                            data-i18n="about-tab-who">
+                        WHO WE ARE
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="tab-reviews-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-reviews"
+                            type="button"
+                            role="tab"
+                            aria-controls="tab-reviews"
+                            aria-selected="false"
+                            data-i18n="about-tab-clients">
+                        WHAT OUR CLIENTS SAY
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link"
+                            id="tab-contact-btn"
+                            data-bs-toggle="tab"
+                            data-bs-target="#tab-contact"
+                            type="button"
+                            role="tab"
+                            aria-controls="tab-contact"
+                            aria-selected="false"
+                            data-i18n="about-tab-contact">
+                        CONTACT US
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Panes -->
+            <div class="tab-content pt-4">
+
+                <!-- ABOUT-->
+                <div class="tab-pane fade show active" id="tab-about" role="tabpanel" aria-labelledby="tab-about-btn">
+                    <section class="container my-4 my-md-5">
+                        <div class="row align-items-center g-4 g-lg-5">
+                            <div class="col-md-6" data-animate="fade-up">
+                                <img src="images/dueños.jpeg"
+                                     class="who-img w-100 rounded"
+                                     alt="Founders of Concierge Costa Rica" />
+                            </div>
+                            <div class="col-md-6" data-animate="fade-up">
+                                <h3 class="display-6 fw-semibold"
+                                    style="font-family: 'Playfair Display', serif;"
+                                    data-i18n="about-title">
+                                    Who We Are
+                                </h3>
+                                <p data-i18n="about-text-1">
+                                    Concierge Costa Rica is a concierge service company born from the passion and shared vision of
+                                    three friends with a strong commitment to providing unique experiences and personalized solutions
+                                    to our clients.
+                                </p>
+                                <p data-i18n="about-text-2">
+                                    We specialize in offering a wide range of services not only in Costa Rica but also in other key
+                                    destinations. From organizing private transportation, in-home chefs, reservations, and special
+                                    events to managing everyday tasks that make life easier and more enjoyable.
+                                </p>
+                                <a href="#tab-contact"
+                                   class="btn btn-dark"
+                                   data-i18n="about-btn-learn">
+                                    LEARN MORE
+                                </a>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- REVIEWS -->
+                <div class="tab-pane fade" id="tab-reviews" role="tabpanel" aria-labelledby="tab-reviews-btn">
+                    <section class="testimonial rounded">
+                        <div class="container">
+                            <h3 class="text-center mb-4 text-white"
+                                data-i18n="about-tab-clients">
+                                What Our Clients Say
+                            </h3>
+                            <div id="carReviews" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    <div class="carousel-item active">
+                                        <blockquote class="text-center mx-auto" style="max-width:820px;">
+                                            "From the moment we landed in Turks and Caicos, their VIP Fast Track service made
+                                            everything smooth. The villa was stunning and the pre-stocked groceries were exactly
+                                            what we requested. Perfect service!"
+                                            <div class="mt-3">- Michael &amp; Emily, Chicago</div>
+                                        </blockquote>
+                                    </div>
+                                    <div class="carousel-item">
+                                        <blockquote class="text-center mx-auto" style="max-width:820px;">
+                                            "Transportation and private chef were flawless. Highly recommended."
+                                            <div class="mt-3">- Anna, New York</div>
+                                        </blockquote>
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carReviews" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carReviews" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="tab-pane fade" id="tab-contact" role="tabpanel" aria-labelledby="tab-contact-btn">
+                    <section>
+                        <div class="section-title">
+                            <h2 data-i18n="contact-title">Contact Us</h2>
+                            <hr />
+                        </div>
+
+                        <!-- Mensaje de éxito manejado por JS -->
+                        <div id="contactAlert" class="alert alert-success d-none">
+                            Message sent! We will contact you shortly.
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-md-5">
+                                <h4 data-i18n="contact-left-title">Get In Touch</h4>
+                                <p class="mb-2">
+                                    <i class="bi bi-telephone me-2"></i>+1 (754) 223 0031
+                                </p>
+                                <p class="mb-2">
+                                    <i class="bi bi-envelope me-2"></i>info@luxuryconcierge.com
+                                </p>
+                                <p class="mb-3">
+                                    <i class="bi bi-geo-alt me-2"></i>
+                                    <span data-i18n="contact-locations">Costa Rica, Mexico, Turks and Caicos</span>
+                                </p>
+                                <div class="d-flex gap-3 fs-4">
+                                    <i class="bi bi-facebook"></i>
+                                    <i class="bi bi-instagram"></i>
+                                    <i class="bi bi-twitter-x"></i>
+                                    <i class="bi bi-pinterest"></i>
+                                </div>
+                            </div>
+
+                            <div class="col-md-7">
+                                <form id="contactForm" class="contact-card">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <input class="form-control"
+                                                   name="name"
+                                                   required
+                                                   data-i18n-ph="contact-ph-name"
+                                                   placeholder="Your Name" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input class="form-control"
+                                                   type="email"
+                                                   name="email"
+                                                   required
+                                                   data-i18n-ph="contact-ph-email"
+                                                   placeholder="Your Email" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input class="form-control"
+                                                   name="subject"
+                                                   data-i18n-ph="contact-ph-subject"
+                                                   placeholder="Subject" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <input class="form-control"
+                                                   name="phone"
+                                                   data-i18n-ph="contact-ph-phone"
+                                                   placeholder="Telephone" />
+                                        </div>
+                                        <div class="col-12">
+                                            <textarea class="form-control"
+                                                      name="message"
+                                                      rows="5"
+                                                      data-i18n-ph="contact-ph-message"
+                                                      placeholder="Enter the requested service, time, number of people, and location here:"></textarea>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-dark mt-3 px-4"
+                                            type="submit"
+                                            data-i18n="contact-btn-send">
+                                        SEND MESSAGE
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Animaciones simples con IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
+
+        // Cambiar de tab al pasar el mouse (hover) – corregido a #aboutTabs
+        document.querySelectorAll('#aboutTabs [data-bs-toggle="tab"]').forEach(function (el) {
+            el.addEventListener('mouseenter', function () {
+                if (window.matchMedia('(hover: hover)').matches) {
+                    const tab = new bootstrap.Tab(this);
+                    tab.show();
+                }
+            });
+        });
+
+        // Simulación de envío de formulario de contacto (sin backend)
+        const contactForm = document.getElementById('contactForm');
+        const contactAlert = document.getElementById('contactAlert');
+
+        if (contactForm) {
+            contactForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                contactAlert.classList.remove('d-none');
+                contactAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                contactForm.reset();
+            });
+        }
+    </script>
+
 </body>
 </html>
-
