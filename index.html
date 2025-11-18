@@ -786,7 +786,152 @@
             });
         }
     </script>
+<script>
+const translations = {
+    en: {
+        "hero-title": "CONCIERGE SERVICES",
+        "hero-subtitle": "Experience the ultimate in personalized service across our exclusive destinations",
+        "hero-cta": "START YOUR EXPERIENCE",
+
+        "home-destinations-title": "Our Exclusive Destinations",
+        "dest-card-cr-title": "Costa Rica",
+        "dest-card-cr-sub": "Discover pristine beaches, volcanoes, and lush tropical forests",
+        "dest-card-riv-title": "Riviera Maya, Mexico",
+        "dest-card-riv-sub": "Experience the allure of Caribbean coastlines and Mayan culture",
+        "dest-card-tc-title": "Turks and Caicos",
+        "dest-card-tc-sub": "Indulge in the world's most spectacular turquoise waters",
+        "dest-card-miami-title": "Miami",
+        "dest-card-miami-sub": "United States premier beach destination",
+        "dest-card-bahamas-title": "Bahamas",
+        "dest-card-bahamas-sub": "Exclusive beachfront paradise",
+        "dest-card-future-title": "Future destinations",
+        "dest-card-future-sub": "Our next places",
+
+        "home-services-title": "Our Premium Services",
+        "service-villas-title": "Villa Rentals",
+        "service-villas-sub": "Exclusive villas in Costa Rica, Riviera Maya, and Turks and Caicos",
+        "service-chefs-title": "Private Chefs",
+        "service-chefs-sub": "Personalized culinary experiences in the comfort of your villa",
+        "service-transport-title": "Transportation",
+        "service-transport-sub": "Specialized ground transportation services for a seamless travel",
+        "service-fasttrack-title": "VIP Fast Track",
+        "service-fasttrack-sub": "Expedited airport services in San Jose, Guanacaste, and Turks & Caicos",
+        "service-yacht-title": "Yacht Charters",
+        "service-yacht-sub": "Private yacht experiences along spectacular coastlines",
+        "service-tours-title": "Private Tours",
+        "service-tours-sub": "Curated tours and activities tailored to your preferences",
+        "service-jet-title": "Private Jet & Helicopter",
+        "service-jet-sub": "Air travel and transfers in Costa Rica",
+        "service-spa-title": "In-Home Spa Therapy",
+        "service-spa-sub": "Relaxing spa treatments in the privacy of your villa",
+
+        "about-tab-who": "WHO WE ARE",
+        "about-tab-clients": "WHAT OUR CLIENTS SAY",
+        "about-tab-contact": "CONTACT US",
+
+        "about-title": "Who We Are",
+        "about-text-1": "Concierge Costa Rica is a concierge service company born...",
+        "about-text-2": "We specialize in offering a wide range of services...",
+        "about-btn-learn": "LEARN MORE",
+
+        "contact-title": "Contact Us",
+        "contact-left-title": "Get In Touch",
+        "contact-locations": "Costa Rica, Mexico, Turks and Caicos",
+        "contact-btn-send": "SEND MESSAGE",
+
+        // PLACEHOLDERS
+        "contact-ph-name": "Your Name",
+        "contact-ph-email": "Your Email",
+        "contact-ph-subject": "Subject",
+        "contact-ph-phone": "Telephone",
+        "contact-ph-message": "Enter the requested service, time, number of people, and location here:"
+    },
+
+    es: {
+        "hero-title": "SERVICIOS DE LUJO",
+        "hero-subtitle": "Experimenta el máximo nivel de servicio personalizado en destinos exclusivos",
+        "hero-cta": "COMIENZA TU EXPERIENCIA",
+
+        "home-destinations-title": "Nuestros Destinos Exclusivos",
+        "dest-card-cr-title": "Costa Rica",
+        "dest-card-cr-sub": "Descubre playas vírgenes, volcanes y bosques tropicales",
+        "dest-card-riv-title": "Riviera Maya, México",
+        "dest-card-riv-sub": "Vive la magia del Caribe y la cultura Maya",
+        "dest-card-tc-title": "Turks y Caicos",
+        "dest-card-tc-sub": "Disfruta las aguas turquesas más espectaculares del mundo",
+        "dest-card-miami-title": "Miami",
+        "dest-card-miami-sub": "El destino de playa más icónico de Estados Unidos",
+        "dest-card-bahamas-title": "Bahamas",
+        "dest-card-bahamas-sub": "Un paraíso exclusivo frente al mar",
+        "dest-card-future-title": "Próximos destinos",
+        "dest-card-future-sub": "Nuestros próximos lugares",
+
+        "home-services-title": "Nuestros Servicios Premium",
+        "service-villas-title": "Alquiler de Villas",
+        "service-villas-sub": "Villas exclusivas en Costa Rica, Riviera Maya y Turks y Caicos",
+        "service-chefs-title": "Chefs Privados",
+        "service-chefs-sub": "Experiencias culinarias personalizadas en tu villa",
+        "service-transport-title": "Transporte",
+        "service-transport-sub": "Transporte terrestre especializado para un viaje perfecto",
+        "service-fasttrack-title": "VIP Fast Track",
+        "service-fasttrack-sub": "Servicios VIP en aeropuertos de San José, Guanacaste y Turks & Caicos",
+        "service-yacht-title": "Charters de Yates",
+        "service-yacht-sub": "Experiencias privadas en yate",
+        "service-tours-title": "Tours Privados",
+        "service-tours-sub": "Actividades y tours diseñados a tu medida",
+        "service-jet-title": "Jet Privado & Helicóptero",
+        "service-jet-sub": "Traslados y vuelos privados en Costa Rica",
+        "service-spa-title": "Spa en Casa",
+        "service-spa-sub": "Relajación total con terapias en tu villa",
+
+        "about-tab-who": "QUIÉNES SOMOS",
+        "about-tab-clients": "OPINIONES DE CLIENTES",
+        "about-tab-contact": "CONTÁCTANOS",
+
+        "about-title": "Quiénes Somos",
+        "about-text-1": "Concierge Costa Rica nace de la visión y pasión de tres amigos...",
+        "about-text-2": "Nos especializamos en ofrecer una amplia gama de servicios...",
+        "about-btn-learn": "SABER MÁS",
+
+        "contact-title": "Contáctanos",
+        "contact-left-title": "Ponte en Contacto",
+        "contact-locations": "Costa Rica, México, Turks y Caicos",
+        "contact-btn-send": "ENVIAR MENSAJE",
+
+        // PLACEHOLDERS
+        "contact-ph-name": "Tu Nombre",
+        "contact-ph-email": "Tu Correo",
+        "contact-ph-subject": "Asunto",
+        "contact-ph-phone": "Teléfono",
+        "contact-ph-message": "Indica servicio, fecha, cantidad de personas y ubicación:"
+    }
+};
+
+function setLanguage(lang) {
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (translations[lang][key]) el.textContent = translations[lang][key];
+    });
+
+    document.querySelectorAll("[data-i18n-ph]").forEach(el => {
+        const key = el.getAttribute("data-i18n-ph");
+        if (translations[lang][key]) el.setAttribute("placeholder", translations[lang][key]);
+    });
+
+    localStorage.setItem("concierium-lang", lang);
+}
+
+document.querySelectorAll(".lang-option").forEach(btn => {
+    btn.addEventListener("click", () => {
+        setLanguage(btn.dataset.lang);
+    });
+});
+
+// INIT
+setLanguage(localStorage.getItem("concierium-lang") || "en");
+</script>
 
 </body>
 </html>
+
 
