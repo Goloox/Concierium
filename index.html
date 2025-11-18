@@ -102,7 +102,19 @@
             background: #00a58a;
         }
 
+        .btn-outline-light {
+            border-radius: 999px;
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
+        }
+
         /* ===== SECTIONS ===== */
+        main {
+            background-color: #f8f9fb;
+        }
+
         section {
             background-color: #f8f9fb;
         }
@@ -271,11 +283,7 @@
             transform: none;
         }
 
-        /* ===== UTILITIES ===== */
-        main {
-            background-color: #f8f9fb;
-        }
-
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 767.98px) {
             .hero {
                 min-height: 85vh;
@@ -310,7 +318,7 @@
     </nav>
 
     <!-- ===== HERO ===== -->
-    <header id="top" class="hero" style="background-image:url('images/Arenal.jpg')">
+    <header id="top" class="hero" style="background-image:url('img/Arenal.jpg')">
         <div class="hero-content container" data-animate="fade-up">
             <h1 class="display-4 fw-semibold" data-i18n="hero-title">
                 CONCIERGE SERVICES
@@ -318,11 +326,23 @@
             <p class="lead mx-auto" style="max-width:720px;" data-i18n="hero-subtitle">
                 Experience the ultimate in personalized service across our exclusive destinations
             </p>
-            <a href="#destinations"
-               class="btn btn-cta mt-3"
-               data-i18n="hero-cta">
-                START YOUR EXPERIENCE
-            </a>
+
+            <!-- BOTONES -->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+                <a href="#destinations"
+                   class="btn btn-cta"
+                   data-i18n="hero-cta">
+                    START YOUR EXPERIENCE
+                </a>
+                <a href="signin.html"
+                   class="btn btn-outline-light">
+                    SIGN IN
+                </a>
+                <a href="login.html"
+                   class="btn btn-outline-light">
+                    LOGIN
+                </a>
+            </div>
         </div>
     </header>
 
@@ -338,7 +358,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/tucan.jpg')"
+                       style="background-image:url('img/tucan.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-cr-title">Costa Rica</h5>
@@ -352,7 +372,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/Riviera.jpg')"
+                       style="background-image:url('img/Riviera.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-riv-title">Riviera Maya, Mexico</h5>
@@ -366,7 +386,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/providenciales.jpg')"
+                       style="background-image:url('img/providenciales.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-tc-title">Turks and Caicos</h5>
@@ -380,7 +400,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/miami.jpg')"
+                       style="background-image:url('img/miami.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-miami-title">Miami</h5>
@@ -394,7 +414,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/bahamas.jpg')"
+                       style="background-image:url('img/bahamas.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-bahamas-title">Bahamas</h5>
@@ -408,7 +428,7 @@
                 <div class="col-md-4">
                     <a href="#"
                        class="dest-card text-decoration-none d-block"
-                       style="background-image:url('images/future.jpg')"
+                       style="background-image:url('img/future.jpg')"
                        data-animate="zoom-in">
                         <div class="dest-text">
                             <h5 data-i18n="dest-card-future-title">Future destinations</h5>
@@ -566,7 +586,7 @@
                     <section class="container my-4 my-md-5">
                         <div class="row align-items-center g-4 g-lg-5">
                             <div class="col-md-6" data-animate="fade-up">
-                                <img src="images/dueños.jpeg"
+                                <img src="img/dueños.jpeg"
                                      class="who-img w-100 rounded"
                                      alt="Founders of Concierge Costa Rica" />
                             </div>
@@ -733,7 +753,7 @@
 
         document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
 
-        // Cambiar de tab al pasar el mouse (hover) – corregido a #aboutTabs
+        // Cambiar de tab al pasar el mouse (hover)
         document.querySelectorAll('#aboutTabs [data-bs-toggle="tab"]').forEach(function (el) {
             el.addEventListener('mouseenter', function () {
                 if (window.matchMedia('(hover: hover)').matches) {
